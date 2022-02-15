@@ -36,6 +36,11 @@ RUN apt-get update && \
         ln -sf /usr/bin/python3.8 /usr/bin/python && \
         ln -sf /usr/bin/pip3 /usr/bin/pip 
 
+# Install Linguist
+RUN apt-get install cmake pkg-config libicu-dev zlib1g-dev libcurl4-openssl-dev libssl-dev ruby-dev
+RUN gem install github-linguist
+
+
 # Install Golang
 RUN wget -q -O - https://raw.githubusercontent.com/canha/golang-tools-install-script/master/goinstall.sh | bash
 
@@ -66,7 +71,7 @@ ENV PATH="$PATH:${CODEQL_HOME}/codeql:/root/go/bin:/root/.go/bin:/usr/local/sbin
 COPY scripts /root/scripts
 
 # Pre-compile our queries to save time later
-RUN /root/scripts/compile-qs.sh
+# RUN /root/scripts/compile-qs.sh
 
 WORKDIR /root/
 ENTRYPOINT ["/root/scripts/analyze.sh"]

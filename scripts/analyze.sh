@@ -11,10 +11,21 @@ print_green() {
 
 SRC=/opt/src
 
+if [[ -z "${CI_PROJECT_DIR}" ]]; then
+    SRC=/opt/src
+else
+    SRC="${CI_PROJECT_DIR}"
+fi
+
 if [ -z $LANGUAGE ]
 then
-        LANGUAGES=(${CI_PROJECT_REPOSITORY_LANGUAGES//,/ })
-        LANGUAGE=${LANGUAGES[0]}
+        if ![ -z $CI_PROJECT_REPOSITORY_LANGUAGES]
+        then
+            LANGUAGES=(${CI_PROJECT_REPOSITORY_LANGUAGES//,/ })
+            LANGUAGE=${LANGUAGES[0]}
+        else
+            LANGUAGE=$(github-linguist $SRC| awk 'FNR <= 1' | rev | cut -d' ' -f 1 | rev)
+        fi
 fi
 
 if [[ "$LANGUAGE" == "python" || "$LANGUAGE" == "javascript" || "$LANGUAGE" == "c" || "$LANGUAGE" == "csharp" || "$LANGUAGE" == "java" || "$LANGUAGE" == "go" ]]
@@ -23,12 +34,6 @@ then
 else
         echo "[!] Invalid language: $LANGUAGE"
         exit 3
-fi
-
-if [[ -z "${CI_PROJECT_DIR}" ]]; then
-    SRC=/opt/src
-else
-    SRC="${CI_PROJECT_DIR}"
 fi
 
 if [ -z $FORMAT ]
@@ -62,8 +67,8 @@ echo "----------------"
 # cat $OUTPUT/gl-sast-report.json
 # ls
 
-print_green "Creating DB: codeql database create --language=$LANGUAGE $DB -s $SRC"
-codeql database create --language=$LANGUAGE $DB -s $SRC
+print_green "Creating DB: codeql database create --language=$LANGUAGE $DB -s $SRC --overwrite"
+codeql database create --language=$LANGUAGE $DB -s $SRC --overwrite
 
 print_green "Start Scanning: codeql database analyze --format=$FORMAT --output=$OUTPUT/issues.$FORMAT $DB $QS"
 codeql database analyze --format=$FORMAT --output=$OUTPUT/issues.$FORMAT $DB $QS
