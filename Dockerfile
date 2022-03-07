@@ -37,7 +37,7 @@ RUN apt-get update && \
         ln -sf /usr/bin/pip3 /usr/bin/pip 
 
 # Install Linguist
-RUN apt-get install cmake pkg-config libicu-dev zlib1g-dev libcurl4-openssl-dev libssl-dev ruby-dev
+RUN apt-get install -y cmake pkg-config libicu-dev zlib1g-dev libcurl4-openssl-dev libssl-dev ruby-dev
 RUN gem install github-linguist
 
 

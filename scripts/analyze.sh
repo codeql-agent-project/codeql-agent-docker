@@ -19,7 +19,7 @@ fi
 
 if [ -z $LANGUAGE ]
 then
-        if ![ -z $CI_PROJECT_REPOSITORY_LANGUAGES]
+        if [ ! -z $CI_PROJECT_REPOSITORY_LANGUAGES ]
         then
             LANGUAGES=(${CI_PROJECT_REPOSITORY_LANGUAGES//,/ })
             LANGUAGE=${LANGUAGES[0]}
@@ -28,6 +28,7 @@ then
         fi
 fi
 
+LANGUAGE=${LANGUAGE,,}
 if [[ "$LANGUAGE" == "python" || "$LANGUAGE" == "javascript" || "$LANGUAGE" == "c" || "$LANGUAGE" == "csharp" || "$LANGUAGE" == "java" || "$LANGUAGE" == "go" ]]
 then
         echo "$LANGUAGE"
@@ -38,7 +39,7 @@ fi
 
 if [ -z $FORMAT ]
 then
-    FORMAT="sarif-latest"
+    FORMAT="sarif"
 fi
 
 if [ -z $QS ]
@@ -48,11 +49,11 @@ fi
 
 if [ -z $OUTPUT ]
 then
-    OUTPUT="$SRC"
+    OUTPUT="/opt/results"
 fi
 
 
-DB=$SRC/codeql-db
+DB=$OUTPUT/codeql-db
 
 echo "----------------"
 print_green " [+] Language: $LANGUAGE"
@@ -67,11 +68,15 @@ echo "----------------"
 # cat $OUTPUT/gl-sast-report.json
 # ls
 
-print_green "Creating DB: codeql database create --language=$LANGUAGE $DB -s $SRC --overwrite"
-codeql database create --language=$LANGUAGE $DB -s $SRC --overwrite
+print_green "Creating DB: codeql database create --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG"
+codeql database create --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG
 
 print_green "Start Scanning: codeql database analyze --format=$FORMAT --output=$OUTPUT/issues.$FORMAT $DB $QS"
 codeql database analyze --format=$FORMAT --output=$OUTPUT/issues.$FORMAT $DB $QS
 
 print_green "Convert SARIF to SAST: python3 /root/scripts/sarif2sast.py $OUTPUT/issues.$FORMAT -o $OUTPUT/gl-sast-report.json"
 python3 /root/scripts/sarif2sast.py $OUTPUT/issues.$FORMAT -o $OUTPUT/gl-sast-report.json
+
+if [[ "$FORMAT" == "sarif"* ]]; then
+    mv $OUTPUT/issues.$FORMAT $OUTPUT/issues.sarif
+fi
