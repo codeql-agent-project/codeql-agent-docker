@@ -26,6 +26,7 @@ RUN apt-get update && \
     	g++ \
     	make \
     	gcc \
+		nodejs \
     	apt-utils \
         rsync \
     	file \
@@ -71,7 +72,7 @@ ENV PATH="$PATH:${CODEQL_HOME}/codeql:/root/go/bin:/root/.go/bin:/usr/local/sbin
 COPY scripts /root/scripts
 
 # Pre-compile our queries to save time later
-# RUN /root/scripts/compile-qs.sh
+RUN /root/scripts/compile-qs.sh
 
 WORKDIR /root/
 ENTRYPOINT ["/root/scripts/analyze.sh"]

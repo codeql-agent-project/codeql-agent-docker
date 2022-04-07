@@ -29,7 +29,7 @@ then
 fi
 
 LANGUAGE=${LANGUAGE,,}
-if [[ "$LANGUAGE" == "python" || "$LANGUAGE" == "javascript" || "$LANGUAGE" == "c" || "$LANGUAGE" == "csharp" || "$LANGUAGE" == "java" || "$LANGUAGE" == "go" ]]
+if [[ "$LANGUAGE" == "python" || "$LANGUAGE" == "javascript" || "$LANGUAGE" == "cpp" || "$LANGUAGE" == "csharp" || "$LANGUAGE" == "java" || "$LANGUAGE" == "go" ]]
 then
         echo "$LANGUAGE"
 else
@@ -67,16 +67,48 @@ echo "----------------"
 # cp /root/scripts/gl-sast-report.json $OUTPUT/gl-sast-report.json
 # cat $OUTPUT/gl-sast-report.json
 # ls
-
-print_green "Creating DB: codeql database create --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG"
-codeql database create --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG
-
-print_green "Start Scanning: codeql database analyze --format=$FORMAT --output=$OUTPUT/issues.$FORMAT $DB $QS"
-codeql database analyze --format=$FORMAT --output=$OUTPUT/issues.$FORMAT $DB $QS
-
-print_green "Convert SARIF to SAST: python3 /root/scripts/sarif2sast.py $OUTPUT/issues.$FORMAT -o $OUTPUT/gl-sast-report.json"
-python3 /root/scripts/sarif2sast.py $OUTPUT/issues.$FORMAT -o $OUTPUT/gl-sast-report.json
-
-if [[ "$FORMAT" == "sarif"* ]]; then
-    mv $OUTPUT/issues.$FORMAT $OUTPUT/issues.sarif
+if [ -z $ACTION ]
+then
+    ACTION='all'
 fi
+
+
+
+create_database() {
+    print_green "Creating DB: codeql database create --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG"
+    codeql database create --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG
+}
+
+scan() {
+    print_green "Start Scanning: codeql database analyze --format=$FORMAT --output=$OUTPUT/issues.$FORMAT $DB $QS"
+    codeql database analyze --format=$FORMAT --output=$OUTPUT/issues.$FORMAT $DB $QS
+}
+
+convert_sarif_to_sast() {
+    print_green "Convert SARIF to SAST: python3 /root/scripts/sarif2sast.py $OUTPUT/issues.$FORMAT -o $OUTPUT/gl-sast-report.json"
+    python3 /root/scripts/sarif2sast.py $OUTPUT/issues.$FORMAT -o $OUTPUT/gl-sast-report.json
+    if [[ "$FORMAT" == "sarif"* ]]; then
+        mv $OUTPUT/issues.$FORMAT $OUTPUT/issues.sarif
+    fi
+}
+
+finalize() {
+    if [ ! -z $USERID ]
+    then
+        chown -R $USERID:$GROUPID $OUTPUT
+    fi
+}
+
+main() {
+    if [ "$ACTION" == 'create-database-only' ]; then
+        create_database
+    else
+        create_database
+        scan
+        convert_sarif_to_sast
+    fi
+    finalize
+}
+
+main
+
