@@ -1,3 +1,4 @@
 nohup.out
 codeql-agent-results
 .vscode
+*\.test
