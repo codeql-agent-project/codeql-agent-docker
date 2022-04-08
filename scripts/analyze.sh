@@ -9,6 +9,7 @@ print_green() {
     echo -e "${GREEN}${1}${RESET}"
 }
 
+# Set SRC
 SRC=/opt/src
 
 if [[ -z "${CI_PROJECT_DIR}" ]]; then
@@ -28,6 +29,7 @@ then
         fi
 fi
 
+# Set options
 LANGUAGE=${LANGUAGE,,}
 if [[ "$LANGUAGE" == "python" || "$LANGUAGE" == "javascript" || "$LANGUAGE" == "cpp" || "$LANGUAGE" == "csharp" || "$LANGUAGE" == "java" || "$LANGUAGE" == "go" || "$LANGUAGE" == "typescript" ]]
 then
@@ -59,6 +61,9 @@ fi
 
 DB=$OUTPUT/codeql-db
 
+# Set NUMBER_OF_THREADS
+
+# Show execution information
 echo "----------------"
 print_green " [+] Language: $LANGUAGE"
 print_green " [+] Query-suites: $QS"
@@ -68,24 +73,21 @@ print_green " [+] Output: $OUTPUT"
 print_green " [+] Format: $FORMAT"
 echo "----------------"
 
-# cp /root/scripts/gl-sast-report.json $OUTPUT/gl-sast-report.json
-# cat $OUTPUT/gl-sast-report.json
-# ls
+# Check action
 if [ -z $ACTION ]
 then
     ACTION='all'
 fi
 
-
-
+# Functions
 create_database() {
     print_green "Creating DB: codeql database create --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG"
-    codeql database create --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG
+    codeql database create --threads=$NUMBER_OF_THREADS --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG
 }
 
 scan() {
     print_green "Start Scanning: codeql database analyze --format=$FORMAT --output=$OUTPUT/issues.$FORMAT $DB $QS"
-    codeql database analyze --format=$FORMAT --output=$OUTPUT/issues.$FORMAT $DB $QS
+    codeql database analyze --format=$FORMAT --threads=$NUMBER_OF_THREADS --output=$OUTPUT/issues.$FORMAT $DB $QS
 }
 
 convert_sarif_to_sast() {
@@ -114,5 +116,6 @@ main() {
     finalize
 }
 
+# Main
 main
 
