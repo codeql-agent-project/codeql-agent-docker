@@ -58,6 +58,10 @@ then
     OUTPUT="/opt/results"
 fi
 
+if [ -z $NUMBER_OF_THREADS ]
+then
+    NUMBER_OF_THREADS="0"
+fi
 
 DB=$OUTPUT/codeql-db
 
