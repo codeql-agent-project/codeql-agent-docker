@@ -58,14 +58,14 @@ then
     OUTPUT="/opt/results"
 fi
 
-if [ -z $NUMBER_OF_THREADS ]
+if [ -z $THREADS ]
 then
-    NUMBER_OF_THREADS="0"
+    THREADS="0"
 fi
 
 DB=$OUTPUT/codeql-db
 
-# Set NUMBER_OF_THREADS
+# Set THREADS
 
 # Show execution information
 echo "----------------"
@@ -85,13 +85,13 @@ fi
 
 # Functions
 create_database() {
-    print_green "Creating DB: codeql database create --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG"
-    codeql database create --threads=$NUMBER_OF_THREADS --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG
+    print_green "Creating DB: codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG"
+    codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG
 }
 
 scan() {
-    print_green "Start Scanning: codeql database analyze --format=$FORMAT --output=$OUTPUT/issues.$FORMAT $DB $QS"
-    codeql database analyze --format=$FORMAT --threads=$NUMBER_OF_THREADS --output=$OUTPUT/issues.$FORMAT $DB $QS
+    print_green "Start Scanning: codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS"
+    codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS
 }
 
 convert_sarif_to_sast() {
