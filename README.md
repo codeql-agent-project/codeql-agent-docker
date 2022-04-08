@@ -6,7 +6,8 @@ Source build docker image `codeql-agent`
 ### Build and run local
 ```
 cd codeql-agent
-docker build -t codeql-agent .
+sudo docker build -t doublevkay/codeql-agent-dev:1.1.0 .
+nohup sudo docker build -t doublevkay/codeql-agent-dev:1.1.0 .; telegram-send "Build image codeql v1.1.0 done"
 docker run --rm --name codeql-docker -v "$PWD/vulnerable-source-code:/opt/src" -e "LANGUAGE=python" -e "FORMAT=sarif-latest" codeql-agent
 ```
 

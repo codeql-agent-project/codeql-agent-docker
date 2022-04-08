@@ -29,9 +29,13 @@ then
 fi
 
 LANGUAGE=${LANGUAGE,,}
-if [[ "$LANGUAGE" == "python" || "$LANGUAGE" == "javascript" || "$LANGUAGE" == "cpp" || "$LANGUAGE" == "csharp" || "$LANGUAGE" == "java" || "$LANGUAGE" == "go" ]]
+if [[ "$LANGUAGE" == "python" || "$LANGUAGE" == "javascript" || "$LANGUAGE" == "cpp" || "$LANGUAGE" == "csharp" || "$LANGUAGE" == "java" || "$LANGUAGE" == "go" || "$LANGUAGE" == "typescript" ]]
 then
-        echo "$LANGUAGE"
+    if [[ "$LANGUAGE" == "typescript" ]]
+    then
+        LANGUAGE="javascript"
+    fi
+    echo "$LANGUAGE"
 else
         echo "[!] Invalid language: $LANGUAGE"
         exit 3
