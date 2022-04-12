@@ -16,6 +16,7 @@ if [[ -z "${CI_PROJECT_DIR}" ]]; then
     SRC=/opt/src
 else
     SRC="${CI_PROJECT_DIR}"
+    OUTPUT=$SRC/codeql-db
 fi
 
 if [ -z $LANGUAGE ]
@@ -45,7 +46,7 @@ fi
 
 if [ -z $FORMAT ]
 then
-    FORMAT="sarif"
+    FORMAT="sarif-latest"
 fi
 
 if [ -z $QS ]
@@ -61,6 +62,11 @@ fi
 if [ -z $THREADS ]
 then
     THREADS="0"
+fi
+
+if [[ $COMMAND ]]
+then
+    COMMAND="--command='${COMMAND}'"
 fi
 
 DB=$OUTPUT/codeql-db
@@ -85,8 +91,8 @@ fi
 
 # Functions
 create_database() {
-    print_green "Creating DB: codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG"
-    codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG
+    print_green "Creating DB: codeql database create --threads=$THREADS --language=$LANGUAGE $COMMAND $DB -s $SRC $OVERWRITE_FLAG"
+    codeql database create --threads=$THREADS --language=$LANGUAGE $COMMAND $DB -s $SRC $OVERWRITE_FLAG
 }
 
 scan() {
