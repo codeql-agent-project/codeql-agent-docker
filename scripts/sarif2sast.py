@@ -7,7 +7,7 @@ import argparse
 import json
 import uuid
 import re
-
+import datetime
 
 def get_nested_dict(element, *keys, required=False, defaultValue=None):
     """
@@ -84,6 +84,8 @@ def sarif2sast(data):
             },
             "status": "success",
             "type": "sast",
+            "start_time": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
+            "end_time": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
         },
     }
     for item in results:
@@ -123,14 +125,21 @@ def sarif2sast(data):
             "endLine",
             defaultValue=start_line,
         )
-        identifiers = parse_tags(
-            rules[item["rule"]["index"]]["properties"]["tags"]
-            if rules[item["rule"]["index"]]["properties"]["tags"]
-            else []
-        )
+        # identifiers = parse_tags(
+        #     rules[item["rule"]["index"]]["properties"]["tags"]
+        #     if rules[item["rule"]["index"]]["properties"]["tags"]
+        #     else []
+        # )
+        identifiers = [{
+            "type": "codeql_query_id",
+            "name": item["ruleId"],
+            "value": item["ruleId"]
+        }]
+        item_id = uuid.uuid4().hex;
         item_obj = {
-            "id": uuid.uuid4().hex,
+            "id": item_id,
             "category": "sast",
+            "cve": item_id,
             "message": message,
             "description": description,
             "severity": severity,
