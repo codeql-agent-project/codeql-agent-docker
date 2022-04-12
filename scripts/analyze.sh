@@ -16,7 +16,7 @@ if [[ -z "${CI_PROJECT_DIR}" ]]; then
     SRC=/opt/src
 else
     SRC="${CI_PROJECT_DIR}"
-    OUTPUT=$SRC/codeql-db
+    OUTPUT=$SRC
 fi
 
 if [ -z $LANGUAGE ]
