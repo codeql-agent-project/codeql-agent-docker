@@ -51,7 +51,7 @@ fi
 
 if [ -z $QS ]
 then
-    QS="$LANGUAGE-code-scanning.qls"
+    QS="$LANGUAGE-security-extended.qls"
 fi
 
 if [ -z $OUTPUT ]
