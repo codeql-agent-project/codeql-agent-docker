@@ -32,11 +32,15 @@ fi
 
 # Set options
 LANGUAGE=${LANGUAGE,,}
-if [[ "$LANGUAGE" == "python" || "$LANGUAGE" == "javascript" || "$LANGUAGE" == "cpp" || "$LANGUAGE" == "csharp" || "$LANGUAGE" == "java" || "$LANGUAGE" == "go" || "$LANGUAGE" == "typescript" ]]
+if [[ "$LANGUAGE" == "python" || "$LANGUAGE" == "javascript" || "$LANGUAGE" == "cpp" || "$LANGUAGE" == "csharp" || "$LANGUAGE" == "java" || "$LANGUAGE" == "go" || "$LANGUAGE" == "typescript" || "$LANGUAGE" == "c" ]]
 then
     if [[ "$LANGUAGE" == "typescript" ]]
     then
         LANGUAGE="javascript"
+    fi
+    if [[ "$LANGUAGE" == "c" ]]
+    then
+        LANGUAGE="cpp"
     fi
     echo "$LANGUAGE"
 else
