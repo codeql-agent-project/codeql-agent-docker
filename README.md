@@ -3,11 +3,14 @@
 The CodeQL runner docker image. See the release version on [DockerHub](https://hub.docker.com/repository/docker/doublevkay/codeql-agent-dev).
 
 ## Usage
+You can use [CodeQL Agent Image](https://hub.docker.com/repository/docker/doublevkay/codeql-agent-dev) on DockerHub or build it locally.
 ### Build and run local
 ```
+# Build docker image
 cd codeql-agent
 docker build -t codeql-agent-dev .
-docker run --rm --name codeql-docker -v "$PWD/vulnerable-source-code:/opt/src" -e "LANGUAGE=python" -e "FORMAT=sarif-latest" codeql-agent-dev
+# Run
+docker run --rm --name codeql-agent-docker -v "$PWD:/opt/src" -e "USERID=$(id -u ${USER})" -e "GROUPID=$(id -g ${USER})" -v "$PWD/codeql-agent-results:/opt/results" -e "OVERWRITE_FLAG=--overwrite" -e "THREADS=0" -e "FORMAT=sarif-latest" doublevkay/codeql-agent-dev
 ```
 
 ### Gitlab CI/CD
