@@ -9,6 +9,10 @@ print_green() {
     echo -e "${GREEN}${1}${RESET}"
 }
 
+print_red() {
+    echo -e "${RED}${1}${RESET}"
+}
+
 # Set SRC
 SRC=/opt/src
 
@@ -19,6 +23,11 @@ else
     OUTPUT=$SRC
 fi
 
+if [ ! -d "$SRC" ]; then
+    print_red "Error: ${SRC} not found. Can not continue."
+    exit 3
+fi
+
 if [ -z $LANGUAGE ]
 then
         if [ ! -z $CI_PROJECT_REPOSITORY_LANGUAGES ]
@@ -27,6 +36,10 @@ then
             LANGUAGE=${LANGUAGES[0]}
         else
             LANGUAGE=$(github-linguist $SRC| awk 'FNR <= 1' | rev | cut -d' ' -f 1 | rev)
+            if [[ $LANGUAGE == "" ]]; then
+                print_red "[!] Can not auto detect language. Please check the source code or specify the LANGUAGE variable."
+                exit 4
+            fi
         fi
 fi
 
@@ -45,7 +58,7 @@ then
     echo "$LANGUAGE"
 else
         echo "[!] Invalid language: $LANGUAGE"
-        exit 3
+        exit 5
 fi
 
 if [ -z $FORMAT ]
@@ -97,11 +110,19 @@ fi
 create_database() {
     print_green "Creating DB: codeql database create --threads=$THREADS --language=$LANGUAGE $COMMAND $DB -s $SRC $OVERWRITE_FLAG"
     codeql database create --threads=$THREADS --language=$LANGUAGE $COMMAND $DB -s $SRC $OVERWRITE_FLAG
+    if [ $? -ne 0 ]; then
+        print_red "[!] Codeql create database failed."
+        exit 6
+    fi
 }
 
 scan() {
     print_green "Start Scanning: codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS"
     codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS
+    if [ $? -ne 0 ]; then
+        print_red "[!] CodeQL analyze failed."
+        exit 7
+    fi
 }
 
 convert_sarif_to_sast() {
