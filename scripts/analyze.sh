@@ -119,7 +119,7 @@ fi
 create_database() {
     print_green "Creating DB: codeql database create --threads=$THREADS --language=$LANGUAGE $COMMAND $DB -s $SRC $OVERWRITE_FLAG"
     codeql database create --threads=$THREADS --language=$LANGUAGE $COMMAND $DB -s $SRC $OVERWRITE_FLAG
-    if [ $? -ne 0 ]; then
+    if [[ $? -ne 0 && $? -ne 2 ]]; then # ignore unempty database
         print_red "[!] Codeql create database failed."
         exit 6
     fi
@@ -139,6 +139,7 @@ convert_sarif_to_sast() {
     python3 /root/scripts/sarif2sast.py $OUTPUT/issues.$FORMAT -o $OUTPUT/gl-sast-report.json
     if [[ "$FORMAT" == "sarif"* ]]; then
         mv $OUTPUT/issues.$FORMAT $OUTPUT/issues.sarif
+        python3 /root/scripts/fix-sarifviewer-schema-mismatch.py $OUTPUT/issues.sarif
     fi
 }
 
@@ -146,6 +147,7 @@ finalize() {
     if [ ! -z $USERID ]
     then
         chown -R $USERID:$GROUPID $OUTPUT
+        chown -R $USERID:$GROUPID $SRC
     fi
 }
 
