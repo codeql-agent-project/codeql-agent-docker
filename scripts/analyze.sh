@@ -5,6 +5,8 @@ YELLOW="\033[33m"
 GREEN="\033[32m"
 RESET="\033[0m"
 
+SupportedLanguage=("python" "javascript" "cpp" "csharp" "java" "go" "typescript" "c")
+
 print_green() {
     echo -e "${GREEN}${1}${RESET}"
 }
@@ -32,14 +34,21 @@ if [ -z $LANGUAGE ]
 then
         if [ ! -z $CI_PROJECT_REPOSITORY_LANGUAGES ]
         then
-            LANGUAGES=(${CI_PROJECT_REPOSITORY_LANGUAGES//,/ })
-            LANGUAGE=${LANGUAGES[0]}
+            ListLanguages=(${CI_PROJECT_REPOSITORY_LANGUAGES//,/ })
         else
-            LANGUAGE=$(github-linguist $SRC| awk 'FNR <= 1' | rev | cut -d' ' -f 1 | rev)
-            if [[ $LANGUAGE == "" ]]; then
-                print_red "[!] Can not auto detect language. Please check the source code or specify the LANGUAGE variable."
-                exit 4
+            mapfile -t ListLanguages <<< $(github-linguist $SRC)
+        fi
+        for val in "${ListLanguages[@]}"; do
+            lang="$(echo $val | rev | cut -d' ' -f 1 | rev)"
+            lang=${lang,,}
+            if [[ "${SupportedLanguage[*]}" =~ "${lang}" ]]; then
+                    LANGUAGE=$lang
+                    break
             fi
+        done
+        if [[ $LANGUAGE == "" ]]; then
+            print_red "[!] Can not auto detect language. Please check the source code or specify the LANGUAGE variable."
+            exit 4
         fi
 fi
 
