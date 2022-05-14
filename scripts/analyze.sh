@@ -1,9 +1,7 @@
 #!/bin/bash
 
-RED="\033[31m"
-YELLOW="\033[33m"
-GREEN="\033[32m"
-RESET="\033[0m"
+
+
 
 SupportedLanguage=("python" "javascript" "cpp" "csharp" "java" "go" "typescript" "c")
 
@@ -23,6 +21,10 @@ if [[ -z "${CI_PROJECT_DIR}" ]]; then
 else
     SRC="${CI_PROJECT_DIR}"
     OUTPUT=$SRC
+    RED="\033[31m"
+    YELLOW="\033[33m"
+    GREEN="\033[32m"
+    RESET="\033[0m"
 fi
 
 if [ ! -d "$SRC" ]; then
@@ -64,7 +66,7 @@ then
     then
         LANGUAGE="cpp"
     fi
-    echo "$LANGUAGE"
+
 else
         echo "[!] Invalid language: $LANGUAGE"
         exit 5
@@ -95,7 +97,7 @@ then
     COMMAND="--command='${COMMAND}'"
 fi
 
-DB=$OUTPUT/codeql-db
+DB="$OUTPUT/codeql-db"
 
 # Set THREADS
 
@@ -117,25 +119,27 @@ fi
 
 # Functions
 create_database() {
-    print_green "Creating DB: codeql database create --threads=$THREADS --language=$LANGUAGE $COMMAND $DB -s $SRC $OVERWRITE_FLAG"
+    print_green "[Running] Creating DB: codeql database create --threads=$THREADS --language=$LANGUAGE $COMMAND $DB -s $SRC $OVERWRITE_FLAG"
     codeql database create --threads=$THREADS --language=$LANGUAGE $COMMAND $DB -s $SRC $OVERWRITE_FLAG
     if [[ $? -ne 0 && $? -ne 2 ]]; then # ignore unempty database
-        print_red "[!] Codeql create database failed."
+        print_red "Error: Codeql create database failed."
+        finalize
         exit 6
     fi
 }
 
 scan() {
-    print_green "Start Scanning: codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS"
+    print_green "[Running] Start Scanning: codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS"
     codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS
     if [ $? -ne 0 ]; then
         print_red "[!] CodeQL analyze failed."
+        finalize
         exit 7
     fi
 }
 
 convert_sarif_to_sast() {
-    print_green "Convert SARIF to SAST: python3 /root/scripts/sarif2sast.py $OUTPUT/issues.$FORMAT -o $OUTPUT/gl-sast-report.json"
+    print_green "[Running] Convert SARIF to SAST: python3 /root/scripts/sarif2sast.py $OUTPUT/issues.$FORMAT -o $OUTPUT/gl-sast-report.json"
     python3 /root/scripts/sarif2sast.py $OUTPUT/issues.$FORMAT -o $OUTPUT/gl-sast-report.json
     if [[ "$FORMAT" == "sarif"* ]]; then
         mv $OUTPUT/issues.$FORMAT $OUTPUT/issues.sarif
@@ -160,6 +164,7 @@ main() {
         convert_sarif_to_sast
     fi
     finalize
+    echo "[Completed]"
 }
 
 # Main

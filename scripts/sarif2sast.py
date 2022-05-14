@@ -187,7 +187,6 @@ def main():
     out = sarif2sast(data)
     with open(OUTPUT, "w") as outfile:
         json.dump(out, outfile, indent=4)
-    print(f"[+] Output: {OUTPUT}")
 
 
 if __name__ == "__main__":
