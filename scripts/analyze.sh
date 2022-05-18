@@ -164,7 +164,7 @@ main() {
         convert_sarif_to_sast
     fi
     finalize
-    echo "[Completed]"
+    echo "[Complete]"
 }
 
 # Main

@@ -4,7 +4,7 @@ LABEL maintainer="Github codeql team"
 # tzdata install needs to be non-interactive
 ENV DEBIAN_FRONTEND=noninteractive
 
-# install/update basics and python
+# Set up the enviroment
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
@@ -55,22 +55,9 @@ RUN curl --silent "https://api.github.com/repos/github/codeql-cli-binaries/relea
 # Get CodeQL Bundle version
 RUN curl --silent "https://api.github.com/repos/github/codeql-action/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' > /tmp/codeql_bundle_version
 
-# record the latest version of the codeql-cli
+# Make the codeql folder
 RUN mkdir -p ${CODEQL_HOME} \
-    # ${CODEQL_HOME}/codeql-repo \
-    # ${CODEQL_HOME}/codeql-go-repo \
     /opt/codeql
-
-# get the latest codeql queries and record the HEAD
-# RUN git clone --depth=1 https://github.com/github/codeql ${CODEQL_HOME}/codeql-repo && \
-#     git --git-dir ${CODEQL_HOME}/codeql-repo/.git log --pretty=reference -1 > /opt/codeql/codeql-repo-last-commit
-# RUN git clone --depth=1 https://github.com/github/codeql-go ${CODEQL_HOME}/codeql-go-repo && \
-#     git --git-dir ${CODEQL_HOME}/codeql-go-repo/.git log --pretty=reference -1 > /opt/codeql/codeql-go-repo-last-commit
-
-# RUN CODEQL_VERSION=$(cat /tmp/codeql_version) && \
-#     wget -q https://github.com/github/codeql-cli-binaries/releases/download/${CODEQL_VERSION}/codeql-linux64.zip -O /tmp/codeql_linux.zip && \
-#     unzip /tmp/codeql_linux.zip -d ${CODEQL_HOME} && \
-#     rm /tmp/codeql_linux.zip
 
 # Downdload and extract CodeQL Bundle
 RUN CODEQL_BUNDLE_VERSION=$(cat /tmp/codeql_bundle_version) && \
@@ -81,8 +68,6 @@ RUN CODEQL_BUNDLE_VERSION=$(cat /tmp/codeql_bundle_version) && \
 ENV PATH="$PATH:${CODEQL_HOME}/codeql:/root/go/bin:/root/.go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 COPY scripts /root/scripts
 
-# Pre-compile our queries to save time later
-# RUN /root/scripts/compile-qs.sh
-
+# Execute analyze script
 WORKDIR /root/
 ENTRYPOINT ["/root/scripts/analyze.sh"]
