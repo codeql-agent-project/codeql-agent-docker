@@ -114,7 +114,7 @@ docker run --rm --name codeql-agent-docker \
 
 <details>
     <summary>Change owner of the results folder.</summary>
-    Because CodeQL Agent run the script as root in Docker containers. So maybe you need to change the results folder owner to your own.
+    Because CodeQL Agent runs the script as root in Docker containers. So maybe you need to change the results folder owner to your own.
 
 ```bash
 docker run --rm --name codeql-agent-docker \
