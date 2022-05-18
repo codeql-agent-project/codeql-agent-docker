@@ -165,7 +165,7 @@ docker build -t codeql-agent-dev .
 
 
 ## How does it work?
-CodeQL Agent is a Docker image. The following steps are done to achieve the goals of automating the use of CodeQL and Integrating it to Gitlab CI/CD. 
+CodeQL Agent is a Docker image. The following steps are done to achieve the goals of automating the use of CodeQL and integrating it to Gitlab CI/CD. 
 
 <details><summary><b>Setting up environment</b></summary>
 
