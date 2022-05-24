@@ -13,6 +13,7 @@ The CodeQL Agent image is released on **Docker Hub** under the name [`doublevkay
   - [Getting started](#getting-started)
   - [Examples usage](#examples-usage)
   - [Supported options](#supported-options)
+  - [Integrate CodeQL into GitLab CI/CD](#integrate-codeql-into-gitlab-cicd)
   - [Build](#build)
   - [How does it work?](#how-does-it-work)
   - [Support](#support)
@@ -227,7 +228,7 @@ codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --o
 
 ## Credits
 This repo is based on [microsoft/codeql-container](https://github.com/microsoft/codeql-container) and [j3ssie/codeql-docker](https://github.com/j3ssie/codeql-docker) with more function options. Specifically:
-- Enhances environment setup to increase reliability.
+- Enhance environment setup to increase reliability.
 - Automatically detect language.
 - Support helpful CodeQL options.
 - Support Java language. 
