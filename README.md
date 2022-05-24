@@ -137,7 +137,7 @@ docker run --rm --name codeql-agent-docker \
   -v "$PWD/codeql-agent-results:/opt/results" \
   -e "LANGUAGE=java" \
   -e "JAVA_VERSION=8" \
-  -e "COMMAND='mvn clean install'" \
+  -e "COMMAND=mvn clean install" \
   doublevkay/codeql-agent-dev
 
 ```
