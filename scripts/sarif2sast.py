@@ -33,19 +33,32 @@ def get_nested_dict(element, *keys, required=False, defaultValue=None):
 
 
 def convert_precision(precision):
-    result = "Unknown"
-    if precision.lower() == "very-high" or precision.lower() == "critical":
-        result = "Critical"
-    if precision.lower() == "high":
+    if precision.lower() == "very-high":
+        result = "Confirmed"
+    elif precision.lower() == "high":
         result = "High"
-    if precision.lower() == "medium":
+    elif precision.lower() == "medium":
         result = "Medium"
-    if precision.lower() == "low":
+    elif precision.lower() == "low":
         result = "Low"
-    if precision.lower() == "info":
-        result = "Info"
+    else:
+        result = "Unknown"
     return result
 
+def convert_severity(score):
+    # Ref: https://github.blog/changelog/2021-07-19-codeql-code-scanning-new-severity-levels-for-security-alerts/
+    score = float(score)
+    if score >= 9.0 and score <= 10.0:
+        result = "Critical"
+    elif score >= 7.0 and score < 9.0:
+        result = "High"
+    elif score >= 4.0 and score < 7.0:
+        result = "Medium"
+    elif score >= 0.1 and score < 4.0:
+        result = "Low"
+    else:
+        result = "Unknown" 
+    return result
 
 def parse_tags(tags):
     return [
@@ -102,9 +115,17 @@ def sarif2sast(data):
             "text",
             defaultValue="",
         )
-        severity = convert_precision(
+        severity = convert_severity(
             get_nested_dict(
                 get_nested_dict(rules, rule_index, required=True),
+                "properties",
+                "security-severity",
+                defaultValue="0",
+            )
+        )
+        confidence = convert_precision(
+            get_nested_dict(
+                get_nested_dict(rules, rule_index, required=False),
                 "properties",
                 "precision",
                 defaultValue="",
@@ -143,6 +164,7 @@ def sarif2sast(data):
             "message": message,
             "description": description,
             "severity": severity,
+            "confidence": confidence,
             "scanner": {"id": scanner_id, "name": scanner_name},
             "location": {"file": uri, "start_line": start_line, "end_line": end_line},
             "identifiers": identifiers,

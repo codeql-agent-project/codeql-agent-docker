@@ -32,11 +32,18 @@ RUN apt-get update && \
     	file \
         dos2unix \
         default-jdk \
+		openjdk-8-jdk \
 		maven \
     	gettext && \
         apt-get clean && \
         ln -sf /usr/bin/python3.8 /usr/bin/python && \
         ln -sf /usr/bin/pip3 /usr/bin/pip 
+
+# Install Gradle
+ENV GRADLE_VERSION=7.4.2
+RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -P /tmp
+RUN unzip -d /opt/gradle /tmp/gradle-${GRADLE_VERSION}-bin.zip
+RUN ln -s /opt/gradle/gradle-${GRADLE_VERSION} /opt/gradle/latest
 
 # Install Linguist
 RUN apt-get install -y cmake pkg-config libicu-dev zlib1g-dev libcurl4-openssl-dev libssl-dev ruby-dev
@@ -65,7 +72,7 @@ RUN CODEQL_BUNDLE_VERSION=$(cat /tmp/codeql_bundle_version) && \
     tar -xf /tmp/codeql_linux.tar.gz -C ${CODEQL_HOME} && \
     rm /tmp/codeql_linux.tar.gz
 
-ENV PATH="$PATH:${CODEQL_HOME}/codeql:/root/go/bin:/root/.go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ENV PATH="$PATH:${CODEQL_HOME}/codeql:/opt/gradle/gradle-${GRADLE_VERSION}/bin:/root/go/bin:/root/.go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 COPY scripts /root/scripts
 
 # Execute analyze script

@@ -92,9 +92,16 @@ then
     THREADS="0"
 fi
 
-if [[ $COMMAND ]]
+# Switch to Java 8
+if [[ $JAVA_VERSION ]]
 then
-    COMMAND="--command='${COMMAND}'"
+    if [[ $JAVA_VERSION == "8" ]]; then
+        update-java-alternatives -s $(update-java-alternatives -l | grep 8 | cut -d " " -f1) || echo '.'
+    elif [[ $JAVA_VERSION == "11" ]]; then
+        update-java-alternatives -s $(update-java-alternatives -l | grep 11 | cut -d " " -f1) || echo '.'
+    fi
+else
+    echo "Error: JAVA_VERSION must be 8 or 11."
 fi
 
 DB="$OUTPUT/codeql-db"
@@ -119,8 +126,14 @@ fi
 
 # Functions
 create_database() {
-    print_green "[Running] Creating DB: codeql database create --threads=$THREADS --language=$LANGUAGE $COMMAND $DB -s $SRC $OVERWRITE_FLAG"
-    codeql database create --threads=$THREADS --language=$LANGUAGE $COMMAND $DB -s $SRC $OVERWRITE_FLAG
+    if [[ $COMMAND ]]
+    then
+        print_green "[Running] Creating DB: codeql database create --threads=$THREADS --language=$LANGUAGE --command=\"$COMMAND\" $DB -s $SRC $OVERWRITE_FLAG"
+        codeql database create --threads=$THREADS --language=$LANGUAGE --command="$COMMAND" $DB -s $SRC $OVERWRITE_FLAG
+    else
+        print_green "[Running] Creating DB: codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG"
+        codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG
+    fi
     if [[ $? -ne 0 && $? -ne 2 ]]; then # ignore unempty database
         print_red "Error: Codeql create database failed."
         finalize

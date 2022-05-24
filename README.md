@@ -57,6 +57,8 @@ You can set environment variables to use the following supported options:
 `QS`| Value `<queries-suite>`. Specify a list of queries to run over your database. The default value is `<language>-security-extended.qls`. For more details, please see [Analyzing databases with the CodeQL CLI](https://codeql.github.com/docs/codeql-cli/analyzing-databases-with-the-codeql-cli/#running-codeql-database-analyze).
 `SAVE_CACHE_FLAG` | Value `--save-cache`. Aggressively save intermediate results to the disk cache. This may speed up subsequent queries if they are similar. Be aware that using this option will greatly increase disk usage and initial evaluation time. 
 `ACTION` | Value `create-database-only`. Creating CodeQL database only without executing CodeQL analysis.
+`COMMAND` | Value `command`. The variable used when you create a CodeQL database for one or more compiled languages, omit if the only languages requested are Python and JavaScript. This specifies the build commands needed to invoke the compiler. If you don't set this variable, CodeQL will attempt to detect the build system automatically, using a built-in autobuilder. 
+`JAVA_VERSION` | Value `<java_version>`. Set Java version. The default Java version is Java 11. The `<java_version>` must be `8` or `11`.
 -----
 
 ***Disclaimer:** CodeQL Agent directly forwards these options to the command arguments while running the container. Please take it as your security responsibilities.*
@@ -82,8 +84,8 @@ docker run --rm --name codeql-agent-docker \
 docker run --rm --name codeql-agent-docker \
   -v "$PWD:/opt/src" \
   -v "$PWD/codeql-agent-results:/opt/results" \
+  -e "THREADS=0" \
   doublevkay/codeql-agent-dev
-  -e "THREADS=0"
 ```
   </details>
 
@@ -94,8 +96,8 @@ docker run --rm --name codeql-agent-docker \
 docker run --rm --name codeql-agent-docker \
   -v "$PWD:/opt/src" \
   -v "$PWD/codeql-agent-results:/opt/results" \
+  -e "ACTION=create-database-only" \
   doublevkay/codeql-agent-dev
-  -e "ACTION=create-database-only"
 ```
   </details>
 
@@ -106,9 +108,9 @@ docker run --rm --name codeql-agent-docker \
 docker run --rm --name codeql-agent-docker \
   -v "$PWD:/opt/src" \
   -v "$PWD/codeql-agent-results:/opt/results" \
+  -e "LANGUAGE=java" \
+  -e "QS=java-security-and-quality.qls" \
   doublevkay/codeql-agent-dev
-  -e "LANGUAGE=java"
-  -e "QS=java-security-and-quality.qls"
 ```
 </details>
 
@@ -125,6 +127,20 @@ docker run --rm --name codeql-agent-docker \
 ```
 </details>
 
+<details>
+    <summary> Specify the Java version and the build database command </summary>
+
+```bash
+docker run --rm --name codeql-agent-docker \
+  -v "$PWD:/opt/src" \
+  -v "$PWD/codeql-agent-results:/opt/results" \
+  -e "LANGUAGE=java" \
+  -e "JAVA_VERSION=8" \
+  -e "COMMAND='mvn clean install'" \
+  doublevkay/codeql-agent-dev
+
+```
+</details>
 
 ## Integrate CodeQL into GitLab CI/CD
 
