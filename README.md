@@ -59,10 +59,10 @@ You can set environment variables to use the following supported options:
 `SAVE_CACHE_FLAG` | Value `--save-cache`. Aggressively save intermediate results to the disk cache. This may speed up subsequent queries if they are similar. Be aware that using this option will greatly increase disk usage and initial evaluation time. 
 `ACTION` | Value `create-database-only`. Creating CodeQL database only without executing CodeQL analysis.
 `COMMAND` | Value `<command>`. The variable used when you create a CodeQL database for one or more compiled languages, omit if the only languages requested are Python and JavaScript. This specifies the build commands needed to invoke the compiler. If you don't set this variable, CodeQL will attempt to detect the build system automatically, using a built-in autobuilder. 
-`JAVA_VERSION` | Value `<java_version>`. Set Java version. The default Java version is Java 11. The `<java_version>` must be `8` or `11`.
+`JAVA_VERSION` | Value `<java_version>`. Set the Java version. The default Java version is Java 11. It must be `8` or `11`.
 -----
 
-***Disclaimer:** CodeQL Agent directly forwards these options to the command arguments while running the container. Please take it as your security responsibilities.*
+***Disclaimer:** CodeQL Agent directly forwards these options to the command arguments while running the container. Please take it as your security responsibility.*
 
 
 ## Examples usage
