@@ -13,6 +13,7 @@ The CodeQL Agent image is released on **Docker Hub** under the name [`doublevkay
   - [Getting started](#getting-started)
   - [Examples usage](#examples-usage)
   - [Supported options](#supported-options)
+  - [Integrate CodeQL into GitLab CI/CD](#integrate-codeql-into-gitlab-cicd)
   - [Build](#build)
   - [How does it work?](#how-does-it-work)
   - [Support](#support)
