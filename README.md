@@ -212,7 +212,7 @@ codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --o
 
 ## Credits
 This repo is based on [microsoft/codeql-container](https://github.com/microsoft/codeql-container) and [j3ssie/codeql-docker](https://github.com/j3ssie/codeql-docker) with more function options. Specifically:
-- Enhances environment setup to increase reliability.
+- Enhance environment setup to increase reliability.
 - Automatically detect language.
 - Support helpful CodeQL options.
 - Support Java language. 
