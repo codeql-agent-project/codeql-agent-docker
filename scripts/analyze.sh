@@ -1,8 +1,4 @@
 #!/bin/bash
-
-
-
-
 SupportedLanguage=("python" "javascript" "cpp" "csharp" "java" "go" "typescript" "c")
 
 print_green() {
@@ -29,6 +25,7 @@ fi
 
 if [ ! -d "$SRC" ]; then
     print_red "[Error]: ${SRC} not found. Can not continue."
+    finalize
     exit 3
 fi
 
@@ -38,6 +35,7 @@ then
         then
             ListLanguages=(${CI_PROJECT_REPOSITORY_LANGUAGES//,/ })
         else
+            chown -R $(id -u):$(id -g) $SRC
             mapfile -t ListLanguages <<< $(github-linguist $SRC)
         fi
         for val in "${ListLanguages[@]}"; do
@@ -50,6 +48,7 @@ then
         done
         if [[ $LANGUAGE == "" ]]; then
             print_red "[!] Can not auto detect language. Please check the source code or specify the LANGUAGE variable."
+            finalize
             exit 4
         fi
 fi
@@ -69,6 +68,7 @@ then
 
 else
         echo "[!] Invalid language: $LANGUAGE"
+        finalize
         exit 5
 fi
 
@@ -163,7 +163,7 @@ convert_sarif_to_sast() {
 }
 
 finalize() {
-    if [ ! -z $USERID ]
+    if [[ $USERID && $GROUPID ]]
     then
         chown -R $USERID:$GROUPID $OUTPUT
         chown -R $USERID:$GROUPID $SRC
