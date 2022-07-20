@@ -206,7 +206,7 @@ You can open an issue on the [GitHub repo](https://github.com/codeql-agent-proje
 
 ## Contributing
 
-Contributions are always welcome! Just create a merge request or contact me  <a href="https://twitter.com/doublevkay">
+Contributions are always welcome! Just create a pull request or contact me  <a href="https://twitter.com/doublevkay">
     <img src="https://img.shields.io/twitter/url?style=for-the-badge&label=%40doublevkay&logo=twitter&logoColor=00AEFF&labelColor=black&color=7fff00&url=https%3A%2F%2Ftwitter.com%2Fdoublevkay">  </a>
 
 ## Contributors
