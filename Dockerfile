@@ -15,6 +15,7 @@ RUN apt-get update && \
 	gnupg \
 	make \
         rsync \
+		vim \
 		file \
 		curl \
 		wget \
