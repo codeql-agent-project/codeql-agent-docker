@@ -15,25 +15,26 @@ RUN apt-get update && \
 	gnupg \
 	make \
         rsync \
-    	file \
-    	curl \
-    	wget \
-    	git \
-    	jq \
-    	gettext \
-	dos2unix \
-    	unzip \
+		file \
+		curl \
+		wget \
+		git \
+		jq \
+		gettext \
+		dos2unix \
+		unzip \
         python3.8 \
     	python3-venv \
     	python3-pip \
     	python3-setuptools \
         python3-dev \
-    	g++ \
-    	gcc \
+		g++ \
+		gcc \
 	nodejs \
-        openjdk-11-jdk \
-	openjdk-8-jdk \
-	maven && \
+		openjdk-11-jdk \
+		openjdk-8-jdk \
+		maven \
+		ant && \
         apt-get clean && \
         ln -sf /usr/bin/python3.8 /usr/bin/python && \
         ln -sf /usr/bin/pip3 /usr/bin/pip 
