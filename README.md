@@ -1,7 +1,7 @@
 # CodeQL Agent for Docker
-[![Actions Status](https://github.com/docker/compose-cli/workflows/Continuous%20integration/badge.svg)](https://hub.docker.com/repository/docker/doublevkay/codeql-agent-dev)[![Docker Pulls](https://badgen.net/docker/pulls/doublevkay/codeql-agent-dev?icon=docker&label=pulls)](https://hub.docker.com/repository/docker/doublevkay/codeql-agent-dev)[![Docker Image Size](https://badgen.net/docker/size/doublevkay/codeql-agent-dev?icon=docker&label=image%20size)](https://hub.docker.com/repository/docker/doublevkay/codeql-agent-dev)![Github stars](https://badgen.net/github/stars/vovikhangcdv/codeql-agent?icon=github&label=stars)
+[![Actions Status](https://github.com/docker/compose-cli/workflows/Continuous%20integration/badge.svg)](https://hub.docker.com/repository/docker/doublevkay/codeql-agent-dev)[![Docker Pulls](https://badgen.net/docker/pulls/doublevkay/codeql-agent-dev?icon=docker&label=pulls)](https://hub.docker.com/repository/docker/doublevkay/codeql-agent-dev)[![Docker Image Size](https://badgen.net/docker/size/doublevkay/codeql-agent-dev?icon=docker&label=image%20size)](https://hub.docker.com/repository/docker/doublevkay/codeql-agent-dev)![Github stars](https://badgen.net/github/stars/codeql-agent-project/codeql-agent-docker?icon=github&label=stars)
 
-CodeQL Agent is a project aimed at automating the use of CodeQL. The project helps create database and execute CodeQL analysis. CodeQL Agent is a Docker image. It is designed to be compatible with [SAST Gitlab CI/CD](https://docs.gitlab.com/ee/user/application_security/sast/).
+CodeQL Agent is a project aimed at automating the use of CodeQL. The project helps create database and execute CodeQL analysis. CodeQL Agent is a Docker image.
 
 CodeQL Agent for Docker is also the base image of [CodeQL Agent for Visual Studio Code](https://github.com/vovikhangcdv/codeql-agent-extension) - an extension for [Visual Studio Code](https://code.visualstudio.com/) that simplifies CodeQL usage and executes code scanning automatically.
 
@@ -13,7 +13,6 @@ The CodeQL Agent image is released on **Docker Hub** under the name [`doublevkay
   - [Getting started](#getting-started)
   - [Examples usage](#examples-usage)
   - [Supported options](#supported-options)
-  - [Integrate CodeQL into GitLab CI/CD](#integrate-codeql-into-gitlab-cicd)
   - [Build](#build)
   - [How does it work?](#how-does-it-work)
   - [Support](#support)
@@ -29,9 +28,6 @@ CodeQL Agent for Docker provides these key features:
 - Detecting language automatically.
 - Creating CodeQL database.
 - Executing CodeQL database analysis.
-- Integrating CodeQL to your CI/CD process.
-- Integrating CodeQL code scanning to [Gitlab CI/CD](https://docs.gitlab.com/ee/user/application_security/sast/).
-
 
 ## Getting Started
 [Bind mounts](https://docs.docker.com/storage/bind-mounts/) the source, the results folder and run `codeql-agent-dev` image with the following docker command.
@@ -143,35 +139,6 @@ docker run --rm --name codeql-agent-docker \
 ```
 </details>
 
-## Integrate CodeQL into GitLab CI/CD
-
-![codeql-agent-gitlab-demo](media/codeql-agent-gitlab-demo.gif)
-
-You can integrate CodeQL into Gitlab CI/CD by setting up the `.gitlab-ci.yml` file with the following template:
-
-```yaml
-codeql:
-  image: doublevkay/codeql-agent-dev
-  script: /root/scripts/analyze.sh
-  artifacts:
-    reports:
-      sast: gl-sast-report.json
-```
-
-You can use [supported options](#supported-options) by setting environment variables (see [GitLab CI/CD variables](https://docs.gitlab.com/ee/ci/variables/)). For example, the following setup will use ***four threads*** to execute static application security testing in Gitlab CI/CD for ***Java*** language.
-
-```yaml
-codeql:
-  image: doublevkay/codeql-agent-dev
-  script: /root/scripts/analyze.sh
-  artifacts:
-    reports:
-      sast: gl-sast-report.json
-  variables:
-    LANGUAGE: java
-    THREADS: 4
-```
-
 ## Build
 You can use [CodeQL Agent Image](https://hub.docker.com/repository/docker/doublevkay/codeql-agent-dev) on **Docker Hub** or customize and [build it locally](#build-locally).
 ```bash
@@ -182,7 +149,7 @@ docker build -t codeql-agent-dev .
 
 
 ## How does it work?
-CodeQL Agent is a Docker image. The following steps are done to achieve the goals of automating the use of CodeQL and integrating it to Gitlab CI/CD. 
+CodeQL Agent is a Docker image. The following steps are done to achieve the goals of automating the use of CodeQL. 
 
 <details><summary><b>Setting up environment</b></summary>
 
@@ -222,7 +189,7 @@ codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --o
 
 <details> <summary><b> Converting result format </b></summary>
 
->[Gitlab CI/CD](https://docs.gitlab.com/ee/ci/) does not support the SARIF format. Therefore, CodeQL Agent will convert the CodeQL result from [SARIF format](http://docs.oasis-open.org/sarif/sarif/v2.0/csprd01/sarif-v2.0-csprd01.html) to [Security Report Schemas](https://gitlab.com/gitlab-org/security-products/security-report-schemas) (provided by Gitlab). This step is done by mapping the fields of two formats. The details of implementation are in the [sarif2sast](https://github.com/vovikhangcdv/codeql-agent/blob/main/scripts/sarif2sast.py) script. You can use this script independently as a workaround  to solve the [Gitlab Issue 118496](https://gitlab.com/gitlab-org/gitlab/-/issues/118496).
+>CodeQL Agent will convert the CodeQL result from [SARIF format](http://docs.oasis-open.org/sarif/sarif/v2.0/csprd01/sarif-v2.0-csprd01.html) to [Security Report Schemas](https://gitlab.com/gitlab-org/security-products/security-report-schemas) (provided by Gitlab). This step is done by mapping the fields of two formats. The details of implementation are in the [sarif2sast](https://github.com/vovikhangcdv/codeql-agent/blob/main/scripts/sarif2sast.py) script. You can use this script independently as a workaround to solve the [Gitlab Issue 118496](https://gitlab.com/gitlab-org/gitlab/-/issues/118496).
 
 </details>
 
@@ -235,21 +202,21 @@ This repo is based on [microsoft/codeql-container](https://github.com/microsoft/
 
 ## Support
 
-You can open an issue on the [GitHub repo](https://github.com/vovikhangcdv/codeql-agent/issues)
+You can open an issue on the [GitHub repo](https://github.com/codeql-agent-project/codeql-agent-docker/issues)
 
 ## Contributing
 
-Contributions are always welcome! Just create a merge request or contact me  <a href="https://twitter.com/doublevkay">
+Contributions are always welcome! Just create a pull request or contact me  <a href="https://twitter.com/doublevkay">
     <img src="https://img.shields.io/twitter/url?style=for-the-badge&label=%40doublevkay&logo=twitter&logoColor=00AEFF&labelColor=black&color=7fff00&url=https%3A%2F%2Ftwitter.com%2Fdoublevkay">  </a>
 
 ## Contributors
 <a href="https://github.com/vovikhangcdv/codeql-agent-extension/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=vovikhangcdv/codeql-agent" />
+  <img src="https://contrib.rocks/image?repo=codeql-agent-project/codeql-agent-docker" />
 </a>
 
 ## Release Notes
 
-[See details](https://github.com/vovikhangcdv/codeql-agent/releases)
+[See details](https://github.com/codeql-agent-project/codeql-agent-docker/releases)
 
 ## License
 
