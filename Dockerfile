@@ -1,5 +1,5 @@
 FROM ubuntu:20.04 AS codeql_base
-LABEL maintainer="CodeQL Agent Team" 
+LABEL maintainer="CodeQL Agent Community" 
 # Please note that we are a non-profit organization and are not the official team of CodeQL. Please follow the license of CodeQL CLI.
 
 # tzdata install needs to be non-interactive
