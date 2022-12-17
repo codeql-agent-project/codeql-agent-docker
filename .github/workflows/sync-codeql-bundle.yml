@@ -37,6 +37,6 @@ jobs:
           fi
       - name: Create Release
         if: ${{ steps.check.outputs.update == 'true' }}
-        run: gh release create ${{steps.check.outputs.tag}} --generate-notes
+        run: gh release create ${{steps.check.outputs.tag}} --notes "Update to CodeQL version ${{steps.check.outputs.tag}}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
