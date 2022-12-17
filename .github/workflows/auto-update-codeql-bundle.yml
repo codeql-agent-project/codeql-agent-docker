@@ -28,14 +28,14 @@ jobs:
           echo "CodeQL Agent version: $CODEQL_AGENT_VERSION"
           if [ "$CODEQL_BUNDLE_VERSION" = "$CODEQL_AGENT_VERSION" ]; then
             echo "CodeQL Agent is up to date."
-            echo "::set-output name=update::false"
+            echo "update=false" >> $GITHUB_OUTPUT
           else
             echo "CodeQL Agent is outdated."
-            echo "::set-output name=update::true"
-            echo "::set-output name=tag::$CODEQL_BUNDLE_VERSION"
+            echo "update=true" >> $GITHUB_OUTPUT
+            echo "tag=$CODEQL_BUNDLE_VERSION" >> $GITHUB_OUTPUT
           fi
       - name: Create Release
-        if: steps.check.outputs.update == 'true'
+        if: ${{ steps.check.outputs.update == 'true' }}
         run: gh release create ${{steps.check.outputs.tag}} --generate-notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
