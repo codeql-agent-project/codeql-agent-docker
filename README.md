@@ -1,11 +1,11 @@
 # CodeQL Agent for Docker
-[![Actions Status](https://github.com/docker/compose-cli/workflows/Continuous%20integration/badge.svg)](https://hub.docker.com/repository/docker/doublevkay/codeql-agent-dev)[![Docker Pulls](https://badgen.net/docker/pulls/doublevkay/codeql-agent-dev?icon=docker&label=pulls)](https://hub.docker.com/repository/docker/doublevkay/codeql-agent-dev)[![Docker Image Size](https://badgen.net/docker/size/doublevkay/codeql-agent-dev?icon=docker&label=image%20size)](https://hub.docker.com/repository/docker/doublevkay/codeql-agent-dev)![Github stars](https://badgen.net/github/stars/codeql-agent-project/codeql-agent-docker?icon=github&label=stars)
+[![Actions Status](https://github.com/docker/compose-cli/workflows/Continuous%20integration/badge.svg)](https://hub.docker.com/repository/docker/doublevkay/codeql-agent)[![Docker Pulls](https://badgen.net/docker/pulls/doublevkay/codeql-agent?icon=docker&label=pulls)](https://hub.docker.com/repository/docker/doublevkay/codeql-agent)[![Docker Image Size](https://badgen.net/docker/size/doublevkay/codeql-agent?icon=docker&label=image%20size)](https://hub.docker.com/repository/docker/doublevkay/codeql-agent)![Github stars](https://badgen.net/github/stars/codeql-agent-project/codeql-agent-docker?icon=github&label=stars)
 
 CodeQL Agent is a project aimed at automating the use of CodeQL. The project helps create database and execute CodeQL analysis. CodeQL Agent is a Docker image.
 
 CodeQL Agent for Docker is also the base image of [CodeQL Agent for Visual Studio Code](https://github.com/vovikhangcdv/codeql-agent-extension) - an extension for [Visual Studio Code](https://code.visualstudio.com/) that simplifies CodeQL usage and executes code scanning automatically.
 
-The CodeQL Agent image is released on **Docker Hub** under the name [`doublevkay/codeql-agent-dev`](https://hub.docker.com/repository/docker/doublevkay/codeql-agent-dev). You can use it without building locally.
+The CodeQL Agent image is released on **Docker Hub** under the name [`doublevkay/codeql-agent`](https://hub.docker.com/repository/docker/doublevkay/codeql-agent). You can use it without building locally.
 
 
 ### Contents:
@@ -30,13 +30,13 @@ CodeQL Agent for Docker provides these key features:
 - Executing CodeQL database analysis.
 
 ## Getting Started
-[Bind mounts](https://docs.docker.com/storage/bind-mounts/) the source, the results folder and run `codeql-agent-dev` image with the following docker command.
+[Bind mounts](https://docs.docker.com/storage/bind-mounts/) the source, the results folder and run `codeql-agent` image with the following docker command.
 
 ```console
 docker run --rm --name codeql-agent-docker \
   -v "$PWD:/opt/src" \
   -v "$PWD/codeql-agent-results:/opt/results" \
-  doublevkay/codeql-agent-dev
+  doublevkay/codeql-agent
 ```
 
 You also can specify more options to run CodeQL Agent. See [Supported options](#supported-options) for more details. 
@@ -70,7 +70,7 @@ You can set environment variables to use the following supported options:
 docker run --rm --name codeql-agent-docker \
   -v "$PWD:/opt/src" \
   -v "$PWD/codeql-agent-results:/opt/results" \
-  doublevkay/codeql-agent-dev
+  doublevkay/codeql-agent
 ```
 </details>
 
@@ -82,7 +82,7 @@ docker run --rm --name codeql-agent-docker \
   -v "$PWD:/opt/src" \
   -v "$PWD/codeql-agent-results:/opt/results" \
   -e "THREADS=0" \
-  doublevkay/codeql-agent-dev
+  doublevkay/codeql-agent
 ```
   </details>
 
@@ -94,7 +94,7 @@ docker run --rm --name codeql-agent-docker \
   -v "$PWD:/opt/src" \
   -v "$PWD/codeql-agent-results:/opt/results" \
   -e "ACTION=create-database-only" \
-  doublevkay/codeql-agent-dev
+  doublevkay/codeql-agent
 ```
   </details>
 
@@ -107,7 +107,7 @@ docker run --rm --name codeql-agent-docker \
   -v "$PWD/codeql-agent-results:/opt/results" \
   -e "LANGUAGE=java" \
   -e "QS=java-security-and-quality.qls" \
-  doublevkay/codeql-agent-dev
+  doublevkay/codeql-agent
 ```
 </details>
 
@@ -120,7 +120,7 @@ docker run --rm --name codeql-agent-docker \
   -v "$PWD:/opt/src" \
   -v "$PWD/codeql-agent-results:/opt/results" \
   -e "USERID=$(id -u ${USER})" -e "GROUPID=$(id -g ${USER}) \
-  doublevkay/codeql-agent-dev
+  doublevkay/codeql-agent
 ```
 </details>
 
@@ -134,17 +134,17 @@ docker run --rm --name codeql-agent-docker \
   -e "LANGUAGE=java" \
   -e "JAVA_VERSION=8" \
   -e "COMMAND=mvn clean install" \
-  doublevkay/codeql-agent-dev
+  doublevkay/codeql-agent
 
 ```
 </details>
 
 ## Build
-You can use [CodeQL Agent Image](https://hub.docker.com/repository/docker/doublevkay/codeql-agent-dev) on **Docker Hub** or customize and [build it locally](#build-locally).
+You can use [CodeQL Agent Image](https://hub.docker.com/repository/docker/doublevkay/codeql-agent) on **Docker Hub** or customize and [build it locally](#build-locally).
 ```bash
-# Build codeql-agent-dev docker image locally 
+# Build codeql-agent docker image locally 
 cd codeql-agent
-docker build -t codeql-agent-dev .
+docker build -t codeql-agent .
 ```
 
 

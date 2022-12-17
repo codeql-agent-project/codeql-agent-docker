@@ -17,7 +17,7 @@ env:
   REGISTRY: "docker.io"
   # Use docker.io for Docker Hub if empty
   # github.repository as <account>/<repo>
-  IMAGE_NAME: "doublevkay/codeql-agent-dev"
+  IMAGE_NAME: "doublevkay/codeql-agent"
 
 
 jobs:
@@ -69,9 +69,7 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{major}}.{{minor}}
-      - name: Debug
-        run: |
-              echo "${{ steps.meta.outputs.tags }}"
+
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
       - name: Build and push Docker image
@@ -86,7 +84,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       # Ignore codesigning for now
-      
+
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
       # repository is public to avoid leaking data.  If you would like to publish

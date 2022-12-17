@@ -1,0 +1,38 @@
+# Write a workflows that:
+## worklow is triggered by cron job or manually
+## run every day at 00:00 UTC
+## - get current version of codeql bundle by command: curl --silent "https://api.github.com/repos/github/codeql-action/releases/latest" | grep -E -o -m 1 'v([0-9]+)\.([0-9]+)\.([0-9]+)'  | head -n 1
+## - get current release tag of this repo
+## - compare them
+## - if not match, trigger new release
+
+name: Sync CodeQL Bundle
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+jobs:
+  sync-with-codeql-bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check CodeQL Bundle version
+        id: check
+        run: |
+          CODEQL_BUNDLE_VERSION="$(curl --silent "https://api.github.com/repos/github/codeql-action/releases/latest" | grep -E -o -m 1 'v([0-9]+)\.([0-9]+)\.([0-9]+)'  | head -n 1)"
+          CODEQL_AGENT_VERSION="$(git describe --tags --abbrev=0)"
+          echo "CodeQL Bundle version: $CODEQL_BUNDLE_VERSION"
+          echo "CodeQL Agent version: $CODEQL_AGENT_VERSION"
+          if [ "$CODEQL_BUNDLE_VERSION" = "$CODEQL_AGENT_VERSION" ]; then
+            echo "CodeQL Agent is up to date."
+            echo "::set-output name=update::false"
+          else
+            echo "CodeQL Agent is outdated."
+            echo "::set-output name=update::true"
+            echo "::set-output name=tag::$CODEQL_BUNDLE_VERSION"
+          fi
+      - name: Create Release
+        if: steps.check.outputs.update == 'true'
+        run: gh release create ${{steps.check.outputs.tag}} --generate-notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
