@@ -28,6 +28,7 @@ CodeQL Agent for Docker provides these key features:
 - Detecting language automatically.
 - Creating CodeQL database.
 - Executing CodeQL database analysis.
+- Auto sync the latest version of CodeQL CLI and CodeQL library.
 
 ## Getting Started
 [Bind mounts](https://docs.docker.com/storage/bind-mounts/) the source, the results folder and run `codeql-agent` image with the following docker command.
