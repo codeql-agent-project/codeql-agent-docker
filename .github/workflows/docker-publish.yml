@@ -8,6 +8,7 @@ name: Docker
 on:
   release:
     types: [published]
+
 env:
   REGISTRY: "docker.io"
   # Use docker.io for Docker Hub if empty
