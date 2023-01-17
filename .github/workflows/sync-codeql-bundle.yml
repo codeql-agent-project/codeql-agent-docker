@@ -39,4 +39,4 @@ jobs:
         if: ${{ steps.check.outputs.update == 'true' }}
         run: gh release create ${{steps.check.outputs.tag}} --notes "Update to CodeQL version ${{steps.check.outputs.tag}}" -t "${{steps.check.outputs.tag}}"
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
