@@ -47,7 +47,7 @@ You also can specify more options to run CodeQL Agent. See [Supported options](#
 You can set environment variables to use the following supported options:
 | Variable  | Description |
 | ------- | ----------- |
-`LANGUAGE`| Value `<language>`. Set project language to build database or execute SAST. The `<language>` must be: `python`, `javascript`, `cpp`, `csharp`, `java`, `go`, `typescript`, `c`.
+`LANGUAGE`| Value `<language>`. Set project language to build database or execute SAST. The `<language>` must be: `go`, `java`, `cpp`, `csharp`, `cpp`, `javascript`, `ruby`.
 `USERID` | Value `<id>`. Set the owner of the results folder to `<id>`.
 `GROUPID` | Value `<group_id>`. Set the group owner of the results folder to `<group_id>`.
 `THREADS` | Value `<number_of_threads>`. Use this many threads to build database and evaluate queries. Defaults to 1. You can pass 0 to use one thread per core on the machine.
