@@ -1,5 +1,5 @@
 #!/bin/bash
-SupportedLanguage=("python" "javascript" "cpp" "csharp" "java" "go" "typescript" "c")
+SupportedLanguage=("go", "java", "cpp", "csharp", "python", "javascript", "ruby")
 
 print_green() {
     echo -e "${GREEN}${1}${RESET}"
