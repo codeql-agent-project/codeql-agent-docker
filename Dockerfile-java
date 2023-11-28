@@ -1,0 +1,12 @@
+# FROM --platform=amd64 maven:3.8-openjdk-17-slim
+FROM --platform=amd64 maven:3-jdk-8-slim
+
+RUN ls -lia $JAVA_HOME
+
+RUN mkdir -p /opt/jdk/ /opt/maven/
+
+RUN cp -r $JAVA_HOME/* /opt/jdk/
+
+RUN cp -r $MAVEN_HOME/* /opt/maven/
+
+CMD ["echo"]

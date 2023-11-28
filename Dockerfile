@@ -33,7 +33,6 @@ RUN apt-get update && \
     	file \
         dos2unix \
         default-jdk \
-		openjdk-8-jdk \
 		maven \
     	gettext && \
         apt-get clean && \
