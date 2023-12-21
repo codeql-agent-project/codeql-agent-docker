@@ -56,7 +56,6 @@ You can set environment variables to use the following supported options:
 `SAVE_CACHE_FLAG` | Value `--save-cache`. Aggressively save intermediate results to the disk cache. This may speed up subsequent queries if they are similar. Be aware that using this option will greatly increase disk usage and initial evaluation time. 
 `ACTION` | Value `create-database-only`. Creating CodeQL database only without executing CodeQL analysis.
 `COMMAND` | Value `<command>`. The variable used when you create a CodeQL database for one or more compiled languages, omit if the only languages requested are Python and JavaScript. This specifies the build commands needed to invoke the compiler. If you don't set this variable, CodeQL will attempt to detect the build system automatically, using a built-in autobuilder. 
-`JAVA_VERSION` | Value `<java_version>`. Set the Java version. The default Java version is Java 11. It must be `8` or `11`.
 -----
 
 ***Disclaimer:** CodeQL Agent directly forwards these options to the command arguments while running the container. Please take it as your security responsibility.*
@@ -128,16 +127,39 @@ docker run --rm --name codeql-agent-docker \
 <details>
     <summary> Specify the Java version and the build database command </summary>
 
-```bash
-docker run --rm --name codeql-agent-docker \
-  -v "$PWD:/opt/src" \
-  -v "$PWD/codeql-agent-results:/opt/results" \
-  -e "LANGUAGE=java" \
-  -e "JAVA_VERSION=8" \
-  -e "COMMAND=mvn clean install" \
-  doublevkay/codeql-agent
+By default, we use JDK 11 and Maven 3.6.3 for the CodeQL agent image. We can change the versions of Java and Maven by mounting a volume and setting the JAVA_HOME and MAVEN_HOME environment variables in the CodeQL agent container. For example:
 
-```
+1. Create a Dockerfile (named Dockerfile-java) for the specific versions of Java and Maven, and place it in the directory that will be used for mounting later:
+   ```Dockerfile
+    FROM --platform=amd64 maven:3-jdk-8-slim
+
+    RUN mkdir -p /opt/jdk/ /opt/maven/
+
+    RUN cp -r $JAVA_HOME/* /opt/jdk/
+
+    RUN cp -r $MAVEN_HOME/* /opt/maven/
+
+    CMD ["echo"]
+   ```
+2. Build and run the Docker container, mounting the JDK and Maven directories to the respective volumes:
+   ```bash
+    docker buildx build -t codeql-java -f Dockerfile-java .
+    docker run --rm  -v "jdkvol:/opt/jdk" -v "mavenvol:/opt/maven" codeql-java
+   ```
+3. Finally, run codeql-agent container with mounted volumes and set env variable JAVA_HOME, MAVEN_HOME to the mounted volumes
+
+  ```bash
+  docker run --rm --name codeql-agent-docker \
+    -v "$PWD:/opt/src" \
+    -v "$PWD/codeql-agent-results:/opt/results" \
+    -v "jdkvol:/opt/jdk" \
+    -v "mavenvol:/opt/maven" \
+    -e "LANGUAGE=java" \
+    -e "JAVA_HOME=/opt/jdk" \
+    -e "MAVEN_HOME=/opt/maven" \
+    -e "COMMAND=mvn clean install" \
+    doublevkay/codeql-agent
+  ```
 </details>
 
 ## Build
