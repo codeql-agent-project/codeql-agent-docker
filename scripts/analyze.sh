@@ -79,7 +79,7 @@ fi
 
 # Set options
 LANGUAGE=${LANGUAGE,,}
-if [[ "$LANGUAGE" == "python" || "$LANGUAGE" == "javascript" || "$LANGUAGE" == "cpp" || "$LANGUAGE" == "csharp" || "$LANGUAGE" == "java" || "$LANGUAGE" == "go" || "$LANGUAGE" == "typescript" || "$LANGUAGE" == "c" ]]; then
+if [[ "$LANGUAGE" == "python" || "$LANGUAGE" == "javascript" || "$LANGUAGE" == "cpp" || "$LANGUAGE" == "csharp" || "$LANGUAGE" == "java" || "$LANGUAGE" == "go" || "$LANGUAGE" == "typescript" || "$LANGUAGE" == "c"  || "$LANGUAGE" == "ruby" ]]; then
     if [[ "$LANGUAGE" == "typescript" ]]; then
         LANGUAGE="javascript"
     fi
