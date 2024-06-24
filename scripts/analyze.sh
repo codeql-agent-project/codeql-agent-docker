@@ -153,6 +153,7 @@ create_database() {
 
     else
         if [[ -n "$DB/*" ]]; then
+            ls -lia $DB
             exit 0
         else
             print_green "[Running] Creating DB: $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none"
