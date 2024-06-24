@@ -10,7 +10,7 @@ stages:
 build:
   stage: build
   script:
-    - docker buildx build -t codeql-light -f Dockerfile.light
+    - docker buildx build -t codeql-light -f Dockerfile.light .
 
 deploy:
   stage: deploy
