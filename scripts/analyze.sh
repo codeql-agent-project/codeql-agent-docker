@@ -156,8 +156,13 @@ create_database() {
             ls -lia $DB
             exit 0
         else
-            print_green "[Running] Creating DB: $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none"
-            $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none
+            if [[ $COMMAND ]]; then
+                print_green "[Running] Creating DB: $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE --command=\"$COMMAND\" $DB -s $SRC --overwrite"
+                $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE --command="$COMMAND" $DB -s $SRC --overwrite
+            else
+                print_green "[Running] Creating DB: $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none --overwrite"
+                $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none --overwrite
+            fi
         fi
 
     fi
