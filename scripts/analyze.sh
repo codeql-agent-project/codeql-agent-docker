@@ -42,7 +42,7 @@ if [[ -z "${CI_PROJECT_DIR}" ]]; then
     SRC=/opt/src
 else
     SRC="${CI_PROJECT_DIR}"
-    OUTPUT=$SRC
+    # OUTPUT=$SRC
     RED="\033[31m"
     YELLOW="\033[33m"
     GREEN="\033[32m"
