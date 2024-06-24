@@ -1,33 +1,74 @@
 services:
-  codeql-java:
+  codeql-java-8:
     build: 
       context: .  # Build the image from the current directory (context)
-      dockerfile: Dockerfile-java  # Specify the Dockerfile name
+      dockerfile: Dockerfile-java-8  # Specify the Dockerfile name
+    image: codeql-agent-java-8
     volumes:
-      - jdkvol:/opt/jdk  # Mount a pre-existing JDK volume
-      - mavenvol:/opt/maven  # Mount a pre-existing Maven volume
+      - jdkvol8:/opt/jdk  # Mount a pre-existing JDK volume
+      - mavenvol8:/opt/maven  # Mount a pre-existing Maven volume
     command: ["sleep", "30"]  # Execute sleep command for 30 seconds
     stop_grace_period: 0s 
+
+  codeql-java-11:
+    build: 
+      context: .  # Build the image from the current directory (context)
+      dockerfile: Dockerfile-java-11  # Specify the Dockerfile name
+    image: codeql-agent-java-11
+    volumes:
+      - jdkvol11:/opt/jdk  # Mount a pre-existing JDK volume
+      - mavenvol11:/opt/maven  # Mount a pre-existing Maven volume
+    command: ["sleep", "30"]  # Execute sleep command for 30 seconds
+    stop_grace_period: 0s 
+
+  codeql-java-17:
+    build: 
+      context: .  # Build the image from the current directory (context)
+      dockerfile: Dockerfile-java-17  # Specify the Dockerfile name
+    image: codeql-agent-java-17
+    volumes:
+      - jdkvol17:/opt/jdk  # Mount a pre-existing JDK volume
+      - mavenvol17:/opt/maven  # Mount a pre-existing Maven volume
+    command: ["sleep", "30"]  # Execute sleep command for 30 seconds
+    stop_grace_period: 0s 
+
+  # codeql-java-21:
+  #   build: 
+  #     context: .  # Build the image from the current directory (context)
+  #     dockerfile: Dockerfile-java-21  # Specify the Dockerfile name
+  #   image: codeql-agent-java-21
+  #   volumes:
+  #     - jdkvol21:/opt/jdk  # Mount a pre-existing JDK volume
+  #     - mavenvol21:/opt/maven  # Mount a pre-existing Maven volume
+  #   command: ["sleep", "30"]  # Execute sleep command for 30 seconds
+  #   stop_grace_period: 0s 
 
   codeql-agent:
     build: 
       context: .  # Build the image from the current directory (context)
       dockerfile: Dockerfile  # Specify the Dockerfile name
-    volumes:
-      - ${SRC}:/opt/src  # Mount current directory to /opt/src in the container
-      - ${SRC}/codeql-results:/opt/results  # Persistent volume for results
-      - jdkvol:/opt/jdk  # Mount jdk volume (assumed to exist)
-      - mavenvol:/opt/maven  # Mount maven volume (assumed to exist)
-    environment:
-      LANGUAGE: java  # Set environment variable LANGUAGE
-      JAVA_HOME: /opt/jdk  # Set environment variable JAVA_HOME
-      MAVEN_HOME: /opt/maven  # Set environment variable MAVEN_HOME
-      JAVA_OPTS: -Xmx512m -Xms256m -XX:+UseG1GC -XX:G1HeapRegionSize=4M -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=4
-      COMMAND: mvn -Dproject.build.sourceEncoding=UTF-8 -Dproject.reporting.outputEncoding=UTF-8 clean package install -DskipTests # Set the command to execute
-    depends_on:
-      - codeql-java  # Run codeql-agent only after codeql-java
+    image: codeql-agent-docker
+    # volumes:
+    #   - ${SRC}:/opt/src  # Mount current directory to /opt/src in the container
+    #   - ${SRC}/codeql-results:/opt/results  # Persistent volume for results
+    #   - jdkvol:/opt/jdk  # Mount jdk volume (assumed to exist)
+    #   - mavenvol:/opt/maven  # Mount maven volume (assumed to exist)
+    # environment:
+    #   LANGUAGE: java  # Set environment variable LANGUAGE
+    #   JAVA_HOME: /opt/jdk  # Set environment variable JAVA_HOME
+    #   MAVEN_HOME: /opt/maven  # Set environment variable MAVEN_HOME
+    #   JAVA_OPTS: -Xmx512m -Xms256m -XX:+UseG1GC -XX:G1HeapRegionSize=4M -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=4
+    #   COMMAND: mvn -Dproject.build.sourceEncoding=UTF-8 -Dproject.reporting.outputEncoding=UTF-8 clean package install -DskipTests # Set the command to execute
+    # depends_on:
+    #   - codeql-java  # Run codeql-agent only after codeql-java
 
 volumes:
-  jdkvol:
-  mavenvol:
+  jdkvol8:
+  mavenvol8:
+  jdkvol11:
+  mavenvol11:
+  jdkvol17:
+  mavenvol17:
+  jdkvol21:
+  mavenvol21:
   # codeql-agent-results:  # Create a volume for codeql-agent results

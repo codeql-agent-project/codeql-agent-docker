@@ -10,13 +10,15 @@ name: Sync CodeQL Bundle
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: "0 0 * * *"
 defaults:
   run:
     working-directory: .
 jobs:
   sync-with-codeql-bundle:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.PAT }}
     steps:
       - uses: actions/checkout@v3
       - name: Check CodeQL Bundle version
@@ -38,5 +40,3 @@ jobs:
       - name: Create Release
         if: ${{ steps.check.outputs.update == 'true' }}
         run: gh release create ${{steps.check.outputs.tag}} --notes "Update to CodeQL version ${{steps.check.outputs.tag}}" -t "${{steps.check.outputs.tag}}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}

@@ -73,8 +73,13 @@ RUN CODEQL_BUNDLE_VERSION=$(cat /tmp/codeql_bundle_version) && \
 	rm /tmp/codeql_linux.tar.gz
 
 ENV PATH="$PATH:${CODEQL_HOME}/codeql:/opt/gradle/gradle-${GRADLE_VERSION}/bin:/root/go/bin:/root/.go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-COPY scripts /root/scripts
 
+RUN wget https://github.com/skylot/jadx/releases/download/v1.5.0/jadx-1.5.0.zip -P /tmp
+RUN unzip -d /tmp/jadx /tmp/jadx-1.5.0.zip
+RUN chmod a+x /tmp/jadx/bin/jadx 
+RUN mv /tmp/jadx/ /usr/bin/jadx
+
+COPY scripts /root/scripts
 # Execute analyze script
 WORKDIR /root/
 ENTRYPOINT ["/root/scripts/analyze.sh"]

@@ -51,7 +51,7 @@ fi
 
 if [ ! -d "$SRC" ]; then
     print_red "[Error]: ${SRC} not found. Can not continue."
-    finalize
+    # finalize
     exit 3
 fi
 
@@ -72,7 +72,7 @@ if [ -z $LANGUAGE ]; then
     done
     if [[ $LANGUAGE == "" ]]; then
         print_red "[!] Can not auto detect language. Please check the source code or specify the LANGUAGE variable."
-        finalize
+        # finalize
         exit 4
     fi
 fi
@@ -89,7 +89,7 @@ if [[ "$LANGUAGE" == "python" || "$LANGUAGE" == "javascript" || "$LANGUAGE" == "
 
 else
     echo "[!] Invalid language: $LANGUAGE"
-    finalize
+    # finalize
     exit 5
 fi
 
@@ -98,7 +98,7 @@ if [ -z $FORMAT ]; then
 fi
 
 if [ -z $QS ]; then
-    QS="$LANGUAGE-security-extended.qls"
+    QS="$LANGUAGE-security-experimental.qls"
 fi
 
 if [ -z $OUTPUT ]; then
@@ -113,6 +113,10 @@ if [ -z $CUSTOM_QUERY_ONLY ]; then
     CUSTOM_QUERY_ONLY="true"
 fi
 
+# if [ -z $CODEQL_HOME ]; then
+#     CODEQL_HOME="/root/codeql-home"
+# fi
+
 DB="$OUTPUT/codeql-db"
 
 # Set THREADS
@@ -120,6 +124,7 @@ DB="$OUTPUT/codeql-db"
 # Show execution information
 echo "----------------"
 print_green " [+] Language: $LANGUAGE"
+print_green " [+] CodeQL Home: $CODEQL_HOME"
 print_green " [+] Query-suites: $QS"
 print_green " [+] Custom queries: $CQ"
 print_green " [+] Custom queries only: $CQ_ONLY"
@@ -136,70 +141,95 @@ fi
 
 # Functions
 create_database() {
-    if [[ $COMMAND ]]; then
-        print_green "[Running] Creating DB: codeql database create --threads=$THREADS --language=$LANGUAGE --command=\"$COMMAND\" $DB -s $SRC $OVERWRITE_FLAG"
-        codeql database create --threads=$THREADS --language=$LANGUAGE --command="$COMMAND" $DB -s $SRC $OVERWRITE_FLAG
+    # TODO: Check to create or skip database init
+    if [[ "$OVERWRITE" == "true" ]]; then
+        if [[ $COMMAND ]]; then
+            print_green "[Running] Creating DB: $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE --command=\"$COMMAND\" $DB -s $SRC --overwrite"
+            $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE --command="$COMMAND" $DB -s $SRC --overwrite
+        else
+            print_green "[Running] Creating DB: $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none --overwrite"
+            $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none --overwrite
+        fi
+
     else
-        print_green "[Running] Creating DB: codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG"
-        codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC $OVERWRITE_FLAG
+        if [[ -n "$DB/*" ]]; then
+            exit 0
+        else
+            print_green "[Running] Creating DB: $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none"
+            $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none
+        fi
+
     fi
+
     if [[ $? -ne 0 && $? -ne 2 ]]; then # ignore unempty database
         print_red "[Error]: Codeql create database failed."
-        finalize
+        # finalize
         exit 6
     fi
+
 }
 
 scan() {
     if [[ -n "$CQ" ]]; then
         if check_valid_codeql_pack "$CQ"; then
             if [[ "$CQ_ONLY" == "true" ]]; then
-                print_green "[Running] Start Scanning: codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $CQ"
-                codeql database analyze --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $CQ
+                print_green "[Running] Start Scanning: $CODEQL_HOME/codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $CQ"
+                codeql database analyze --rerun --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $CQ
             else
-                print_green "[Running] Start Scanning: codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS path:$CQ"
-                codeql database analyze --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS path:$CQ
+                print_green "[Running] Start Scanning: $CODEQL_HOME/codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS path:$CQ"
+                codeql database analyze --rerun --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS path:$CQ
             fi
         else
             print_red "[!] Invalid Custom Query directory"
         fi
     else
         print_green "[Running] Start Scanning: codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS"
-        codeql database analyze --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS
+        codeql database analyze --rerun --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS
     fi
 
     if [ $? -ne 0 ]; then
         print_red "[!] CodeQL analyze failed."
-        finalize
+        # finalize
         exit 7
     fi
 }
 
 convert_sarif_to_sast() {
-    print_green "[Running] Convert SARIF to SAST: python3 /root/scripts/sarif2sast.py $OUTPUT/issues.$FORMAT -o $OUTPUT/gl-sast-report.json"
-    python3 /root/scripts/sarif2sast.py $OUTPUT/issues.$FORMAT -o $OUTPUT/gl-sast-report.json
+    print_green "[Running] Convert SARIF to SAST: python3 /opt/codeql-scripts/sarif2sast.py $OUTPUT/issues.$FORMAT -o $OUTPUT/gl-sast-report.json"
+    python3 /opt/codeql-scripts/sarif2sast.py $OUTPUT/issues.$FORMAT -o $OUTPUT/gl-sast-report.json
     if [[ "$FORMAT" == "sarif"* ]]; then
         mv $OUTPUT/issues.$FORMAT $OUTPUT/issues.sarif
-        python3 /root/scripts/fix-sarifviewer-schema-mismatch.py $OUTPUT/issues.sarif
+        python3 /opt/codeql-scripts/fix-sarifviewer-schema-mismatch.py $OUTPUT/issues.sarif
     fi
 }
 
-finalize() {
-    if [[ $USERID && $GROUPID ]]; then
-        chown -R $USERID:$GROUPID $OUTPUT
-        chown -R $USERID:$GROUPID $SRC
-    fi
-}
+# finalize() {
+#     if [[ $USERID && $GROUPID ]]; then
+#         chown -R $USERID:$GROUPID $OUTPUT
+#         chown -R $USERID:$GROUPID $SRC
+#     fi
+# }
 
 main() {
-    if [ "$ACTION" == 'create-database-only' ]; then
+    if [[ "$ACTION" == "create-database-only" ]]; then
         create_database
+        echo "[Complete]"
+        exit 0
+    elif [[ "$ACTION" == "scan-only" ]]; then
+        scan
+        convert_sarif_to_sast
     else
         create_database
         scan
         convert_sarif_to_sast
     fi
-    finalize
+
+    if [[ "$CLEAR_DB" == "true" ]]; then
+        echo "[Running] Clear DB"
+        rm -rf $OUTPUT/codeql-db
+    fi
+
+    # finalize
     echo "[Complete]"
 }
 

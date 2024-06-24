@@ -1,0 +1,8 @@
+{
+    "codeQL.githubDatabase.download": "never",
+    "githubPullRequests.ignoredPullRequestBranches": [
+        "main"
+    ],
+    "editor.fontSize": 13,
+    "sarif-viewer.connectToGithubCodeScanning": "off"
+}

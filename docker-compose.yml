@@ -1,0 +1,57 @@
+services:
+  codeql-init:
+    build:
+      context: .
+      dockerfile: Dockerfile.light
+    image: codeql-light
+    volumes:
+      - codeql-home:/root/codeql-home/codeql # Mount a pre-existing JDK volume
+      - codeql-scripts:/opt/codeql-scripts # Mount a pre-existing Maven volume
+    command: ["sleep", "30"] # Execute sleep command for 30 seconds
+
+  build-code:
+    image: ${BUILD_IMAGE}
+    container_name: build-code
+    environment:
+      LANGUAGE: ${LANGUAGE} # Set environment variable LANGUAGE
+      JAVA_OPTS: -Xmx512m -Xms256m -XX:+UseG1GC -XX:G1HeapRegionSize=4M -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=4
+      COMMAND: ${BUILD_COMMAND} # Set the command to execute
+      CODEQL_HOME: /opt/codeql-home
+      ACTION: create-database-only
+      OVERWRITE: true
+      LD_BIND_NOW: 1
+    volumes:
+      - ${SRC}:/opt/src # Mount current directory to /opt/src in the container
+      - ${SRC}/codeql-results:/opt/results # Persistent volume for results
+      - codeql-home:/opt/codeql-home # Mount a pre-existing JDK volume
+      - codeql-scripts:/opt/codeql-scripts # Mount a pre-existing Maven volume
+    command: ["/opt/codeql-scripts/analyze.sh"] # Execute sleep command for 30 seconds
+    stop_grace_period: 0s
+    depends_on:
+      - codeql-init
+        # condition: service_completed_successfully
+
+  codeql-scan:
+    image: codeql-light
+    volumes:
+      - ${SRC}:/opt/src # Mount current directory to /opt/src in the container
+      - ${SRC}/codeql-results:/opt/results # Persistent volume for results
+      - ./customquery/java:/tmp/customquery
+    container_name: codeql-scan
+    environment:
+      JAVA_OPTS: -Xmx512m -Xms256m -XX:+UseG1GC -XX:G1HeapRegionSize=4M -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=4
+      ACTION: scan-only
+      LANGUAGE: ${LANGUAGE}
+      CLEAR_DB: true
+      LD_BIND_NOW: 1
+      CQ: ${CUSTOM_QUERY}
+      CQ_ONLY: false
+    command: ["/opt/codeql-scripts/analyze.sh"]
+    depends_on:
+      build-code:
+        condition: service_completed_successfully
+
+volumes:
+  codeql-home:
+  codeql-scripts:
+  workspace:

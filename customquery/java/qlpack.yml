@@ -1,6 +1,7 @@
-name: custom-query
+name: sa1g0n
 version: 1.0.0
 query-suites:
   - queries: "*.ql"
 dependencies:
-  codeql/javascript-queries: "*"
+  codeql/java-all: "*"
+  codeql/java-queries: "*"

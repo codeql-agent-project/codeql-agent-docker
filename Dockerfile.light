@@ -1,0 +1,36 @@
+FROM --platform=amd64 python:3.9-bullseye
+
+RUN apt-get update
+RUN apt-get install -y build-essential cmake pkg-config libicu-dev zlib1g-dev libcurl4-openssl-dev libssl-dev ruby-dev
+RUN gem install github-linguist
+
+# Install latest codeQL
+ENV CODEQL_HOME /root/codeql-home
+
+# Get CodeQL verion
+RUN curl --silent "https://api.github.com/repos/github/codeql-cli-binaries/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' > /tmp/codeql_version
+
+# Get CodeQL Bundle version
+RUN curl --silent "https://api.github.com/repos/github/codeql-action/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' > /tmp/codeql_bundle_version
+
+# Make the codeql folder
+RUN mkdir -p ${CODEQL_HOME} \
+    /opt/codeql
+
+# Downdload and extract CodeQL Bundle
+RUN CODEQL_BUNDLE_VERSION=$(cat /tmp/codeql_bundle_version) && \
+    wget -q https://github.com/github/codeql-action/releases/download/${CODEQL_BUNDLE_VERSION}/codeql-bundle-linux64.tar.gz -O /tmp/codeql_linux.tar.gz && \
+    tar -xf /tmp/codeql_linux.tar.gz -C ${CODEQL_HOME} && \
+    rm /tmp/codeql_linux.tar.gz
+
+ENV PATH="$PATH:${CODEQL_HOME}/codeql:/opt/gradle/gradle-${GRADLE_VERSION}/bin:/root/go/bin:/root/.go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+COPY scripts /opt/codeql-scripts
+
+COPY codeql/codeql ${CODEQL_HOME}/codeql/
+# Execute analyze script
+WORKDIR /root/
+# ENTRYPOINT ["/root/scripts/analyze.sh"]
+CMD ["sleep 30"]
+
+
