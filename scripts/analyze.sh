@@ -152,7 +152,7 @@ create_database() {
         fi
 
     else
-        if [[ -n "$DB/*" ]]; then
+        if [ -d "$DB" ] && [ -z "$DB/*" ]; then
             ls -lia $DB
             exit 0
         else
