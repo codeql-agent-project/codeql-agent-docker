@@ -125,6 +125,7 @@ DB="$OUTPUT/codeql-db"
 echo "----------------"
 print_green " [+] Language: $LANGUAGE"
 print_green " [+] CodeQL Home: $CODEQL_HOME"
+print_green " [+] Build: $BUILD"
 print_green " [+] Query-suites: $QS"
 print_green " [+] Custom queries: $CQ"
 print_green " [+] Custom queries only: $CQ_ONLY"
@@ -140,39 +141,70 @@ if [ -z $ACTION ]; then
 fi
 
 # Functions
-create_database() {
-    # TODO: Check to create or skip database init
-    if [[ "$OVERWRITE" == "true" ]]; then
-        if [[ $COMMAND ]]; then
-            print_green "[Running] Creating DB: $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE --command=\"$COMMAND\" $DB -s $SRC --overwrite"
-            $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE --command="$COMMAND" $DB -s $SRC --overwrite
-        else
-            print_green "[Running] Creating DB: $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none --overwrite"
-            $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none --overwrite
-        fi
+# create_database() {
+#     # TODO: Check to create or skip database init
+#     if [[ "$OVERWRITE" == "true" ]]; then
+#         if [[ "$BUILD" == "true" ]]; then
+#             print_green "[Running] Creating DB: $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE --command=\"$COMMAND\" $DB -s $SRC --overwrite"
+#             $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE --command="$COMMAND" $DB -s $SRC --overwrite
+#         else
+#             print_green "[Running] Creating DB: $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none --overwrite"
+#             $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none --overwrite
+#         fi
 
+#     else
+#         if [ -d "$DB" ] && [ -z "$DB/*" ]; then
+#             ls -lia $DB
+#             exit 0
+#         else
+#             if [[ "$BUILD" == "true" ]]; then
+#                 print_green "[Running] Creating DB: $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE --command=\"$COMMAND\" $DB -s $SRC --overwrite"
+#                 $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE --command="$COMMAND" $DB -s $SRC --overwrite
+#             else
+#                 print_green "[Running] Creating DB: $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none --overwrite"
+#                 $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none --overwrite
+#             fi
+#         fi
+
+#     fi
+
+#     if [[ $? -ne 0 && $? -ne 2 ]]; then # ignore unempty database
+#         print_red "[Error]: Codeql create database failed."
+#         # finalize
+#         exit 6
+#     fi
+
+# }
+
+create_database() {
+    # Determine the appropriate command based on BUILD and OVERWRITE variables
+    CMD="$CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE"
+    if [[ "$BUILD" == "true" && "$COMMAND" != "" ]]; then
+        CMD="$CMD --command=\"$COMMAND\""
     else
-        if [ -d "$DB" ] && [ -z "$DB/*" ]; then
-            ls -lia $DB
+        CMD="$CMD --build-mode=none"
+    fi
+
+    if [[ "$OVERWRITE" == "true" ]]; then
+        print_green "[Running] Creating DB with overwrite: $CMD"
+        CMD="$CMD $DB -s $SRC --overwrite"
+        eval $CMD
+    else
+        # Check if the database directory exists and is empty
+        if [ -d "$DB" ] && [ -z "$(ls -A $DB)" ]; then
             exit 0
         else
-            if [[ $COMMAND ]]; then
-                print_green "[Running] Creating DB: $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE --command=\"$COMMAND\" $DB -s $SRC --overwrite"
-                $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE --command="$COMMAND" $DB -s $SRC --overwrite
-            else
-                print_green "[Running] Creating DB: $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none --overwrite"
-                $CODEQL_HOME/codeql database create --threads=$THREADS --language=$LANGUAGE $DB -s $SRC --build-mode=none --overwrite
-            fi
+            print_green "[Running] Creating DB with command: $CMD"
+            CMD="$CMD $DB -s $SRC"
+            eval $CMD
         fi
-
     fi
 
-    if [[ $? -ne 0 && $? -ne 2 ]]; then # ignore unempty database
-        print_red "[Error]: Codeql create database failed."
-        # finalize
+    # Check the exit status of the command
+    if [[ $? -ne 0 && $? -ne 2 ]]; then
+        print_red "[Error]: CodeQL create database failed."
         exit 6
     fi
-
 }
 
 scan() {
