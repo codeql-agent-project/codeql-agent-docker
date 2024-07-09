@@ -207,30 +207,58 @@ create_database() {
     fi
 }
 
+# scan() {
+#     if [[ -n "$CQ" ]]; then
+#         if check_valid_codeql_pack "$CQ"; then
+#             if [[ "$CQ_ONLY" == "true" ]]; then
+#                 print_green "[Running] Start Scanning: $CODEQL_HOME/codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $CQ"
+#                 codeql database analyze --rerun --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $CQ
+#             else
+#                 print_green "[Running] Start Scanning: $CODEQL_HOME/codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS path:$CQ"
+#                 codeql database analyze --rerun --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS path:$CQ
+#             fi
+#         else
+#             print_red "[!] Invalid Custom Query directory"
+#         fi
+#     else
+#         print_green "[Running] Start Scanning: codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS"
+#         codeql database analyze --rerun --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS
+#     fi
+
+#     if [ $? -ne 0 ]; then
+#         print_red "[!] CodeQL analyze failed."
+#         # finalize
+#         exit 7
+#     fi
+# }
+
 scan() {
+    # Define the base command
+    local base_command="$CODEQL_HOME/codeql database analyze --rerun --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB"
+    
     if [[ -n "$CQ" ]]; then
         if check_valid_codeql_pack "$CQ"; then
             if [[ "$CQ_ONLY" == "true" ]]; then
-                print_green "[Running] Start Scanning: $CODEQL_HOME/codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $CQ"
-                codeql database analyze --rerun --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $CQ
+                print_green "[Running] Start Scanning: $base_command $CQ"
+                $base_command $CQ
             else
-                print_green "[Running] Start Scanning: $CODEQL_HOME/codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS path:$CQ"
-                codeql database analyze --rerun --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS path:$CQ
+                print_green "[Running] Start Scanning: $base_command $QS path:$CQ"
+                $base_command $QS path:$CQ
             fi
         else
             print_red "[!] Invalid Custom Query directory"
         fi
     else
-        print_green "[Running] Start Scanning: codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS"
-        codeql database analyze --rerun --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS
+        print_green "[Running] Start Scanning: $base_command $QS"
+        $base_command $QS
     fi
 
     if [ $? -ne 0 ]; then
         print_red "[!] CodeQL analyze failed."
-        # finalize
         exit 7
     fi
 }
+
 
 convert_sarif_to_sast() {
     print_green "[Running] Convert SARIF to SAST: python3 /opt/codeql-scripts/sarif2sast.py $OUTPUT/issues.$FORMAT -o $OUTPUT/gl-sast-report.json"
