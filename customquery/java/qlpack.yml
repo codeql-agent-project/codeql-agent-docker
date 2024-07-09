@@ -1,0 +1,7 @@
+name: sa1g0n
+version: 1.0.0
+query-suites:
+  - queries: "*.ql"
+dependencies:
+  codeql/java-all: "*"
+  codeql/java-queries: "*"

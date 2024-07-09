@@ -9,6 +9,7 @@ import uuid
 import re
 import datetime
 
+
 def get_nested_dict(element, *keys, required=False, defaultValue=None):
     """
     Return value if *keys (nested) exists in `element`, else if required == False - return defaultValue, else raise exception.
@@ -45,6 +46,7 @@ def convert_precision(precision):
         result = "Unknown"
     return result
 
+
 def convert_severity(score):
     # Ref: https://github.blog/changelog/2021-07-19-codeql-code-scanning-new-severity-levels-for-security-alerts/
     score = float(score)
@@ -57,8 +59,9 @@ def convert_severity(score):
     elif score >= 0.1 and score < 4.0:
         result = "Low"
     else:
-        result = "Unknown" 
+        result = "Unknown"
     return result
+
 
 def parse_tags(tags):
     return [
@@ -97,8 +100,8 @@ def sarif2sast(data):
             },
             "status": "success",
             "type": "sast",
-            "start_time": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
-            "end_time": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
+            "start_time": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+            "end_time": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
         },
     }
     for item in results:
@@ -151,12 +154,10 @@ def sarif2sast(data):
         #     if rules[item["rule"]["index"]]["properties"]["tags"]
         #     else []
         # )
-        identifiers = [{
-            "type": "codeql_query_id",
-            "name": item["ruleId"],
-            "value": item["ruleId"]
-        }]
-        item_id = uuid.uuid4().hex;
+        identifiers = [
+            {"type": "codeql_query_id", "name": item["ruleId"], "value": item["ruleId"]}
+        ]
+        item_id = uuid.uuid4().hex
         item_obj = {
             "id": item_id,
             "category": "sast",

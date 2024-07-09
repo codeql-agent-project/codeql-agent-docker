@@ -1,0 +1,161 @@
+#!/bin/sh
+set -e
+
+error() {
+    echo "$@" 1>&2
+    exit 3 # SubcommandCommon.EXITCODE_LAUNCHERFAILURE
+}
+echo "Custom here"
+pwdExtraArg=
+if [ -z "$CODEQL_PLATFORM" ]; then
+    case "$(uname -s)" in
+    *Linux*)
+        CODEQL_PLATFORM=linux64
+        ;;
+    *Darwin*)
+        CODEQL_PLATFORM=osx64
+        ;;
+    *MINGW* | MSYS*)
+        CODEQL_PLATFORM=win64
+        pwdExtraArg=-W
+        ;;
+    *)
+        error "Unknown operating system '$(uname -s)' (full uname: $(uname -a)."
+        ;;
+    esac
+fi
+
+if [ ! -z "$CODEQL_DIST" ] &&
+    [ -f "$CODEQL_DIST/codeql" ] &&
+    [ -f "$CODEQL_DIST/tools/codeql.jar" ]; then
+    : # This existing value looks trustworthy, probably computed by an enclosing
+    # instance of ourselves -- so don't bother with (expensive?) searching from $0.
+else
+    # Follow links from $0 until we find one that looks right.
+    # (This way, users' own symlinks from their path into a dist will work,
+    # but a symlink farm replicating the dist will also work).
+    launcher="$0"
+    dirname="$(dirname "$launcher")"
+    while [ ! -f "$dirname/tools/codeql.jar" ]; do
+        if [ ! -L "$launcher" ]; then
+            error "It does not look like $launcher is located in a CodeQL distribution directory."
+        fi
+        target="$(readlink "$launcher")"
+        case "$target" in
+        /*) launcher="$target" ;;
+        *) launcher="$dirname/$target" ;;
+        esac
+        dirname="$(dirname "$launcher")"
+    done
+    CODEQL_DIST="$(
+        cd "$dirname"
+        pwd $pwdExtraArg
+    )"
+fi
+
+# Check if we're writing to a terminal
+if [ -t 2 ]; then export CODEQL_ISATTY=stderr; else unset CODEQL_ISATTY; fi
+
+export CODEQL_DIST
+export CODEQL_PLATFORM
+
+if [ "$CODEQL_PLATFORM" = "osx64" ]; then
+    # On macOS we need to run outside the Downloads directory, and ensure that
+    # we have cleared all tools from quarantine.
+
+    downloads="$HOME/Downloads"
+    if [ "x${CODEQL_DIST#$downloads}" != "x$CODEQL_DIST" ]; then
+        error "\
+Cannot run CodeQL from within Downloads directory, because of security
+restrictions placed on that directory.  Please move the CodeQL distribution
+to a location outside the Downloads directory tree.
+
+CodeQL distribution: ${CODEQL_DIST}
+Downloads directory: ${downloads}"
+    fi
+
+    if [ -w "${CODEQL_DIST}" -a -w "${CODEQL_DIST}/codeql" ]; then
+        if [ -f /usr/bin/xattr ]; then
+            # If /usr/bin/xattr exists, we know that's the default version of xattr
+            # that Mac OS bundles rather than a GNU one. This is what we want, so
+            # use that.
+            XATTR_PATH=/usr/bin/xattr
+        else
+            # There's nothing at /usr/bin/xattr. This is strange, but let's continue
+            # anyway and use whatever we find on the PATH, hoping it's a Mac OS
+            # version too. This ensures forward compatibility with a future Mac OS
+            # that moves where xattr is located.
+            XATTR_PATH=xattr
+        fi
+        # Similarly, use /usr/bin/find and /usr/bin/xargs, which also differ sufficiently
+        # between the BSD and GNU implementations to break our usage here:
+        if [ -f /usr/bin/find ]; then
+            FIND_PATH=/usr/bin/find
+        else
+            FIND_PATH=find
+        fi
+        if [ -f /usr/bin/xargs ]; then
+            XARGS_PATH=/usr/bin/xargs
+        else
+            XARGS_PATH=xargs
+        fi
+
+        "$FIND_PATH" "${CODEQL_DIST}" "(" -path "*/osx64/*" -o -path "*/macos/*" ")" -a \
+            "(" -perm -100 -o -perm -10 -o -perm -1 -o -name "*.dll" ")" -a \
+            "!" -type d -a -xattr -print0 | "$XARGS_PATH" -0 -- "$XATTR_PATH" -c
+        "$XATTR_PATH" -c "${CODEQL_DIST}/codeql"
+        chmod a-w "${CODEQL_DIST}/codeql"
+    fi
+fi
+
+jvmArgs=""
+takeNext=false
+for arg in "$@"; do
+    if $takeNext && [ "x$arg" != "x--" ]; then
+        jvmArgs="$jvmArgs $arg"
+        takeNext=false
+    else
+        case "$arg" in
+        -J) takeNext=true ;;
+        -J=*) jvmArgs="$jvmArgs ${arg#-J=}" ;;
+        -J*) jvmArgs="$jvmArgs ${arg#-J}" ;;
+        --) break ;;
+        esac
+    fi
+done
+
+arch="$(uname -m)"
+if [ "$CODEQL_PLATFORM" = "osx64" ] && [ "$arch" = "arm64" ]; then
+    : ${CODEQL_JAVA_HOME:=$CODEQL_DIST/tools/$CODEQL_PLATFORM/java-aarch64}
+else
+    : ${CODEQL_JAVA_HOME:=$CODEQL_DIST/tools/$CODEQL_PLATFORM/java}
+fi
+
+if chainfile="$(mktemp -t codeql.XXXXXXXX)"; then
+    trap 'rm -f "$chainfile"' EXIT INT TERM
+    chainfileArg="-Dcodeql.chainer.v1=$chainfile"
+else
+    # invent a no-op argument that will not confuse the JVM
+    chainfileArg="-Dcodeql.chainer.none=blah"
+    chainfile=
+fi
+
+cleanupAfterJvmTermination=
+while true; do
+    set +e
+    "${CODEQL_JAVA_HOME}/bin/java" \
+        $jvmArgs "$chainfileArg" \
+        --add-modules jdk.unsupported \
+        -cp "$CODEQL_DIST/tools/codeql.jar" \
+        "com.semmle.cli2.CodeQL" "$@"
+    exitcode=$?
+    set -e
+    if [ -n "$chainfile" -a $exitcode = 70 ]; then
+        $cleanupAfterJvmTermination
+        . "$chainfile"
+        echo >&2 "Error: $chainfile did not end with continue"
+        chainfile=
+        exit 100
+    fi
+    exit $exitcode
+done

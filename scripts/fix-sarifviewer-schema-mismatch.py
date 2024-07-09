@@ -6,7 +6,7 @@ import json
 
 sarif_file_path = sys.argv[1]
 
-with open(sarif_file_path, 'r') as openfile:
+with open(sarif_file_path, "r") as openfile:
     data = json.load(openfile)
 
 del data["$schema"]
